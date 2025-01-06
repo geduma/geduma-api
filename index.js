@@ -3,7 +3,6 @@ import dotenv from 'dotenv'
 import morgan from 'morgan'
 import cors from 'cors'
 import { router } from './src/routes/router.js'
-import mongoose from 'mongoose'
 
 dotenv.config()
 const app = express()
@@ -17,11 +16,6 @@ app.use(cors())
 
 // routes
 router(app)
-
-// mongoose
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('✅ mongo_db conected!'))
-  .catch(err => console.error(`❌ ${err}`))
 
 app.listen(app.get('port'), () => {
   console.log(`🚀 [port: ${app.get('port')}] server running...`)

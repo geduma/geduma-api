@@ -1,9 +1,18 @@
 import { generalResponse } from '../utils/generalResponse.js'
+import { service } from '../services/snippet-vault.service.js'
 
 export function snippetVaultRouter (app) {
   const path = '/snippet-vault'
 
+  app.get(`${path}/`, (_, res) => {
+    res.send(generalResponse.ok({ message: 'snippet-vault-api' }))
+  })
+
   app.get(`${path}/all`, (_, res) => {
-    res.send(generalResponse.ok('Hello World Snippet Vault'))
+    service.getAll()
+      .then(data => {
+        if (data.length <= 0) res.status(204)
+        res.send(generalResponse.ok(data))
+      }).catch((err) => res.send(generalResponse.error(err)))
   })
 }
