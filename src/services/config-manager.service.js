@@ -1,4 +1,4 @@
-import configurationsSchema from '../../models/config-manager/configurations.js'
+import configurationsSchema from '../models/config-manager/configurations.model.js'
 
 const getAll = () => {
   return configurationsSchema.find()

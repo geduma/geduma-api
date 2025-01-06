@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
+import { conn } from '../db-config.js'
 
-const configurationsSchema = mongoose.Schema({
+const configurationsSchema = new mongoose.Schema({
   owner: {
     type: String,
     required: true
@@ -27,4 +28,4 @@ const configurationsSchema = mongoose.Schema({
   }
 })
 
-export default mongoose.model('configurations', configurationsSchema)
+export default conn.configManagerConn.model('configurations', configurationsSchema)

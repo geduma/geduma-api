@@ -1,8 +1,12 @@
 import { generalResponse } from '../utils/generalResponse.js'
-import { service } from '../services/config-manager/service.js'
+import { service } from '../services/config-manager.service.js'
 
 export function configManagerRouter (app) {
   const path = '/config-manager'
+
+  app.get(`${path}/`, (_, res) => {
+    res.send(generalResponse.ok({ message: 'config-manager-api' }))
+  })
 
   app.get(`${path}/all`, (_, res) => {
     service.getAll()
