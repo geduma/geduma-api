@@ -9,8 +9,17 @@ const getByShort = ({ id }) => {
 const saveUrl = ({ originUrl, shortUrl }) => {
   return customUrlsShema.create({
     originUrl,
-    shortUrl
+    shortUrl,
+    project: 'default'
   })
 }
 
-export const service = { getByShort, saveUrl }
+const saveUrlByProject = ({ originUrl, shortUrl, project }) => {
+  return customUrlsShema.create({
+    originUrl,
+    shortUrl,
+    project
+  })
+}
+
+export const service = { getByShort, saveUrl, saveUrlByProject }
