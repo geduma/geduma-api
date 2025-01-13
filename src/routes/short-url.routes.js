@@ -10,6 +10,14 @@ export function shortUrlRouter (app) {
     res.send(generalResponse.ok({ message: 'short-url-api' }))
   })
 
+  app.get(`${path}/:id`, security.verifyJWT, (req, res) => {
+    service.getByShort({ id: req.params.id })
+      .then(data => {
+        if (data.length <= 0) res.status(204)
+        res.send(generalResponse.ok(data))
+      }).catch((err) => res.send(generalResponse.error(err)))
+  })
+
   app.post(`${path}/auth`, async (req, res) => {
     try {
       const { name, user, key } = req.body
@@ -21,20 +29,24 @@ export function shortUrlRouter (app) {
     }
   })
 
-  app.get(`${path}/:id`, security.verifyJWT, (req, res) => {
-    service.getByShort({ id: req.params.id })
-      .then(data => {
-        if (data.length <= 0) res.status(204)
-        res.send(generalResponse.ok(data))
-      }).catch((err) => res.send(generalResponse.error(err)))
-  })
-
   app.post(`${path}/short`, security.verifyJWT, (req, res) => {
     const shortUrl = Math.random()
       .toString(36)
       .substr(2, 6)
 
     service.saveUrl({ originUrl: req.body.url, shortUrl })
+      .then(data => {
+        if (data.length <= 0) res.status(204)
+        res.send(generalResponse.ok(data))
+      }).catch((err) => res.send(generalResponse.error(err)))
+  })
+
+  app.post(`${path}/short-by-project`, security.verifyJWT, (req, res) => {
+    const shortUrl = Math.random()
+      .toString(36)
+      .substr(2, 6)
+
+    service.saveUrlByProject({ originUrl: req.body.url, shortUrl, project: req.body.project })
       .then(data => {
         if (data.length <= 0) res.status(204)
         res.send(generalResponse.ok(data))
