@@ -10,7 +10,7 @@ export function shortUrlRouter (app) {
     res.send(generalResponse.ok({ message: 'short-url-api' }))
   })
 
-  app.get(`${path}/:id`, security.verifyJWT, (req, res) => {
+  app.get(`${path}/:id`, (req, res) => {
     service.getByShort({ id: req.params.id })
       .then(data => {
         if (data.length <= 0) res.status(204)
