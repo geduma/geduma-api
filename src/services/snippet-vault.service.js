@@ -13,6 +13,7 @@ const auth = (code) => {
       .then(res => res.json())
       .then(data => {
         if (data.access_token) {
+          console.log('access_token :::: ', data.access_token)
           getUser(data.access_token)
             .then(user => {
               const { id, login, name, email } = user
@@ -20,7 +21,10 @@ const auth = (code) => {
             })
         } else reject(data)
       })
-      .catch(err => reject(err))
+      .catch(err => {
+        console.log('err :::: ', err)
+        reject(err)
+      })
   })
 }
 
@@ -36,7 +40,10 @@ const getUser = (token) => {
     })
       .then(res => res.json())
       .then(data => resolve(data))
-      .catch(err => reject(err))
+      .catch(err => {
+        console.log('err2 :::: ', err)
+        reject(err)
+      })
   })
 }
 
