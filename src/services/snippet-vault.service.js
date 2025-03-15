@@ -1,7 +1,7 @@
 import snippetsSchema from '../models/snippet-vault/snippets.model.js'
 
 const auth = (code) => {
-  return new Promise((resolve, reject) => {
+  const req = new Promise((resolve, reject) => {
     fetch('https://github.com/login/oauth/authorize', {
       method: 'POST',
       headers: {
@@ -19,6 +19,8 @@ const auth = (code) => {
       })
       .catch(err => reject(err))
   })
+  console.log(req)
+  return req
 }
 
 const getAll = () => {
