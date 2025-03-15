@@ -2,26 +2,41 @@ import snippetsSchema from '../models/snippet-vault/snippets.model.js'
 
 const auth = (code) => {
   return new Promise((resolve, reject) => {
-    fetch('https://github.com/login/oauth/authorize', {
+    const params = '?client_id=' + process.env.SNIPPET_VAULT_GITHUB_CLIENT_ID + '&client_secret=' + process.env.SNIPPET_VAULT_GITHUB_CLIENT_SECRET + '&code=' + code
+    fetch('https://github.com/login/oauth/access_token' + params, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        client_id: process.env.GITHUB_CLIENT_ID,
-        client_secret: process.env.GITHUB_CLIENT_SECRET,
-        code
-      })
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      }
     })
       .then(res => res.json())
       .then(data => {
-        console.log(data)
-        resolve(data)
+        if (data.access_token) {
+          getUser(data.access_token)
+            .then(user => {
+              const { id, login, name, email } = user
+              resolve({ id, login, name, email })
+            })
+        } else reject(data)
       })
-      .catch(err => {
-        reject(err)
-        console.error(err)
-      })
+      .catch(err => reject(err))
+  })
+}
+
+const getUser = (token) => {
+  return new Promise((resolve, reject) => {
+    fetch('https://api.github.com/user', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: 'token ' + token
+      }
+    })
+      .then(res => res.json())
+      .then(data => resolve(data))
+      .catch(err => reject(err))
   })
 }
 

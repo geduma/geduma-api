@@ -16,8 +16,8 @@ export function snippetVaultRouter (app) {
       }).catch((err) => res.send(generalResponse.error(err)))
   })
 
-  app.post(`${path}/auth`, (req, res) => {
-    service.auth(req.body.code)
+  app.get(`${path}/auth`, (req, res) => {
+    service.auth(req.query.code)
       .then(data => {
         res.send(generalResponse.ok(data))
       }).catch((err) => res.send(generalResponse.error(err)))
