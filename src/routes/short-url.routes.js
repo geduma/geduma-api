@@ -24,7 +24,6 @@ export function shortUrlRouter (app) {
       const data = await authService.auth({ name, user, key }, { apiKey: process.env.API_SHORT_URL_KEY, apiSecret: process.env.API_SHORT_URL_TOKEN_SECRET })
       res.send(generalResponse.ok(data))
     } catch (error) {
-      console.error(error)
       res.status(400).send(generalResponse.error(error))
     }
   })
