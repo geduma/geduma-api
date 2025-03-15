@@ -12,6 +12,7 @@ const auth = (code) => {
     })
       .then(res => res.json())
       .then(data => {
+        console.log('data :::: ', data)
         if (data.access_token) {
           console.log('access_token :::: ', data.access_token)
           getUser(data.access_token)
