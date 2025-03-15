@@ -1,9 +1,10 @@
+import { Endpoints } from '../constants/endpoints.js'
 import snippetsSchema from '../models/snippet-vault/snippets.model.js'
 
 const auth = (code) => {
   return new Promise((resolve, reject) => {
     const params = '?client_id=' + process.env.SNIPPET_VAULT_GITHUB_CLIENT_ID + '&client_secret=' + process.env.SNIPPET_VAULT_GITHUB_CLIENT_SECRET + '&code=' + code
-    fetch('https://github.com/login/oauth/access_token' + params, {
+    fetch(Endpoints.GITHUB_ACCESS_TOKEN + params, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -12,9 +13,7 @@ const auth = (code) => {
     })
       .then(res => res.json())
       .then(data => {
-        console.log('data :::: ', data)
         if (data.access_token) {
-          console.log('access_token :::: ', data.access_token)
           getUser(data.access_token)
             .then(user => {
               const { id, login, name, email } = user
@@ -22,16 +21,13 @@ const auth = (code) => {
             })
         } else reject(data)
       })
-      .catch(err => {
-        console.log('err :::: ', err)
-        reject(err)
-      })
+      .catch(err => reject(err))
   })
 }
 
 const getUser = (token) => {
   return new Promise((resolve, reject) => {
-    fetch('https://api.github.com/user', {
+    fetch(Endpoints.GITHUB_USER, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -41,10 +37,7 @@ const getUser = (token) => {
     })
       .then(res => res.json())
       .then(data => resolve(data))
-      .catch(err => {
-        console.log('err2 :::: ', err)
-        reject(err)
-      })
+      .catch(err => reject(err))
   })
 }
 
