@@ -19,7 +19,12 @@ const auth = (code) => {
       })
       .catch(err => reject(err))
   })
-  console.log(req)
+  req.then(data => {
+    console.log(data)
+  })
+    .error(err => {
+      console.log(err)
+    })
   return req
 }
 
