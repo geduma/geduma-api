@@ -16,8 +16,8 @@ const auth = (code) => {
         if (data.access_token) {
           getUser(data.access_token)
             .then(user => {
-              const { id, login, email } = user
-              resolve({ id, login, email })
+              const { id, login, email, avatar_url: avatarUrl } = user
+              resolve({ id, login, email, avatarUrl })
             })
         } else reject(data)
       })
