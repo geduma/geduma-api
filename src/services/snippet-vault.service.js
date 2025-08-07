@@ -1,7 +1,7 @@
 import { Endpoints } from '../constants/endpoints.js'
 import snippetsSchema from '../models/snippet-vault/snippets.model.js'
 
-const auth = (code) => {
+const authGitHub = (code) => {
   return new Promise((resolve, reject) => {
     const params = '?client_id=' + process.env.SNIPPET_VAULT_GITHUB_CLIENT_ID + '&client_secret=' + process.env.SNIPPET_VAULT_GITHUB_CLIENT_SECRET + '&code=' + code
     fetch(Endpoints.GITHUB_ACCESS_TOKEN + params, {
@@ -14,7 +14,7 @@ const auth = (code) => {
       .then(res => res.json())
       .then(data => {
         if (data.access_token) {
-          getUser(data.access_token)
+          getUserGitHub(data.access_token)
             .then(user => {
               const { id, login, email, avatar_url: avatarUrl } = user
               resolve({ id, login, email, avatarUrl })
@@ -25,7 +25,7 @@ const auth = (code) => {
   })
 }
 
-const getUser = (token) => {
+const getUserGitHub = (token) => {
   return new Promise((resolve, reject) => {
     fetch(Endpoints.GITHUB_USER, {
       method: 'GET',
@@ -45,4 +45,4 @@ const getAll = () => {
   return snippetsSchema.find()
 }
 
-export const service = { getAll, auth }
+export const service = { authGitHub, getUserGitHub, getAll }
