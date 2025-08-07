@@ -45,4 +45,4 @@ const getAll = () => {
   return snippetsSchema.find()
 }
 
-export const service = { authGitHub, getUserGitHub, getAll }
+export const service = { authGitHub, getAll }
