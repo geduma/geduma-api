@@ -23,6 +23,7 @@ const gedumaWebhook = ({ reqBody }) => {
     }, reqBody.channel_post.photo[0])
 
     console.log('Fetching telegram image with file_id:', imgObj)
+    console.log(`${Endpoints.TELEGRAM_GET_FILE}?file_id=${imgObj.file_id}`)
 
     fetch(`${Endpoints.TELEGRAM_GET_FILE}?file_id=${imgObj.file_id}`, {
       method: 'GET',
