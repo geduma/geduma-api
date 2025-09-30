@@ -3,9 +3,12 @@ import { Endpoints } from '../constants/endpoints.js'
 import { imageUrlToBase64 } from '../utils/imageUrlToBase64.js'
 
 const getSummary = ({ schema }) => {
-  return archivesSchema.find({
-    schema
-  })
+  return archivesSchema.find({ schema })
+    .select('-screenShotData')
+}
+
+const getSummaryAll = ({ schema }) => {
+  return archivesSchema.find({ schema })
 }
 
 const gedumaWebhook = ({ reqBody }) => {
@@ -32,7 +35,7 @@ const gedumaWebhook = ({ reqBody }) => {
         .then(res => res.json())
         .then(data => {
           obj.filePath = data.result.file_path
-          imageUrlToBase64(`${Endpoints.TELEGRAM_FILE_BASE_URL}/${data.result.file_path}`)
+          imageUrlToBase64(obj.file_path)
             .then(base64 => {
               obj.screenShotData = base64
               resolve(saveArchive(obj))
@@ -62,4 +65,4 @@ const saveArchive = ({ schema, userName, filePath, textMessage, screenShotData }
   })
 }
 
-export const service = { getSummary, gedumaWebhook }
+export const service = { getSummary, getSummaryAll, gedumaWebhook }
