@@ -10,8 +10,7 @@ export const imageUrlToBase64 = (imageUrl) => {
             .reduce((data, byte) =>
               data + String.fromCharCode(byte), '')
         )
-        const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '')
-        const imageBuffer = Buffer.from(base64Data, 'base64')
+        const imageBuffer = Buffer.from(imageBase64, 'base64')
 
         try {
           sharp(imageBuffer)
