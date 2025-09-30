@@ -29,4 +29,4 @@ const archivesSchema = mongoose.Schema({
   }
 })
 
-export default conn.screenshotBackupConn.model('archives', archivesSchema)
+export default conn.screenShotBackupConn.model('archives', archivesSchema)
