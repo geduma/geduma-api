@@ -1,5 +1,5 @@
-const webhook = ({ reqBody }) => {
-  return `webhook service ${JSON.stringify(reqBody)}`
+const gedumaWebhook = ({ reqBody }) => {
+  return `geduma webhook service ${JSON.stringify(reqBody)}`
 }
 
-export const service = { webhook }
+export const service = { gedumaWebhook }
