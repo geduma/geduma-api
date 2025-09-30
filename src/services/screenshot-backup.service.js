@@ -21,7 +21,11 @@ const gedumaWebhook = ({ reqBody }) => {
     obj.textMessage = reqBody.message.text || reqBody.message.caption || ''
 
     if (reqBody.message.photo) {
-      fetch(`${Endpoints.TELEGRAM_GET_FILE}?file_id=${reqBody.message.photo[0].file_id}`, {
+      const imgObj = reqBody.message.photo.reduce((a, b) => {
+        return a.file_size > b.file_size ? a : b
+      }, reqBody.message.photo[0])
+
+      fetch(`${Endpoints.TELEGRAM_GET_FILE}?file_id=${imgObj.file_id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
