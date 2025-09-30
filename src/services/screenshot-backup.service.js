@@ -9,7 +9,6 @@ const getSummary = ({ schema }) => {
 }
 
 const gedumaWebhook = ({ reqBody }) => {
-  console.log(reqBody)
   return new Promise((resolve, reject) => {
     const obj = {}
 
@@ -48,6 +47,8 @@ const gedumaWebhook = ({ reqBody }) => {
           reject(err)
         })
     } else resolve({})
+
+    fetch(`${Endpoints.TELEGRAM_DELETE_MESSAGE}?chat_id=${reqBody.message.chat.id}&message_id=${reqBody.message.message_id}`)
   })
 }
 
