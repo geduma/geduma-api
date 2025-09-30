@@ -33,6 +33,7 @@ const gedumaWebhook = ({ reqBody }) => {
       .then(res => res.json())
       .then(data => {
         obj.filePath = data.result.file_path
+        console.log(`${Endpoints.TELEGRAM_FILE_BASE_URL}/${data.result.file_path}`)
         imageUrlToBase64(`${Endpoints.TELEGRAM_FILE_BASE_URL}/${data.result.file_path}`)
           .then(base64 => {
             obj.screenShotData = base64
