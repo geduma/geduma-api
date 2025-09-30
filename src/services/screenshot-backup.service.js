@@ -14,16 +14,14 @@ const gedumaWebhook = ({ reqBody }) => {
     const obj = {}
 
     obj.schema = 'geduma'
-    obj.userName = reqBody.channel_post.sender_chat.username || 'unknown'
-    obj.backupDate = reqBody.channel_post.date || Date.now()
-    obj.filePath = 'filePath_url.example'
-    obj.textMessage = reqBody.channel_post.text || reqBody.channel_post.caption || ''
-    obj.screenShotData = ''
+    obj.userName = reqBody.message.from.username || 'unknown'
+    obj.backupDate = reqBody.message.date || Date.now()
+    obj.textMessage = reqBody.message.text || reqBody.message.caption || ''
 
-    if (reqBody.channel_post.photo) {
-      const imgObj = reqBody.channel_post.photo.reduce((a, b) => {
+    if (reqBody.message.photo) {
+      const imgObj = reqBody.message.photo.reduce((a, b) => {
         return a.file_size > b.file_size ? a : b
-      }, reqBody.channel_post.photo[0])
+      }, reqBody.message.photo[0])
 
       fetch(`${Endpoints.TELEGRAM_GET_FILE}?file_id=${imgObj.file_id}`, {
         method: 'GET',
