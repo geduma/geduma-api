@@ -4,21 +4,14 @@ export const imageUrlToBase64 = (imageUrl) => {
   return new Promise((resolve, reject) => {
     fetch(imageUrl)
       .then(response => response.arrayBuffer())
-      .then(buffer => {
-        const imageBase64 = btoa(
-          new Uint8Array(buffer)
-            .reduce((data, byte) =>
-              data + String.fromCharCode(byte), '')
-        )
-        const imageBuffer = Buffer.from(imageBase64, 'base64')
-
+      .then(imageBuffer => {
         try {
           sharp(imageBuffer)
-            .png({ quality: 80 })
+            .jpeg({ quality: 80 })
             .toBuffer()
             .then(compressedBuffer => {
               const compressedBase64 = compressedBuffer.toString('base64')
-              resolve(`data:image/png;base64,${compressedBase64}`)
+              resolve(`data:image/jpeg;base64,${compressedBase64}`)
             })
         } catch (err) {
           console.error(err)
