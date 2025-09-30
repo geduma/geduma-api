@@ -20,7 +20,7 @@ const gedumaWebhook = ({ reqBody }) => {
     obj.backupDate = reqBody.message.date || Date.now()
     obj.textMessage = reqBody.message.text || reqBody.message.caption || ''
 
-    if (reqBody.message.photo) {
+    if (reqBody.message.photo.length > 0) {
       const imgObj = reqBody.message.photo.reduce((a, b) => {
         return a.file_size > b.file_size ? a : b
       }, reqBody.message.photo[0])
