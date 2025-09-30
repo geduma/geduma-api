@@ -38,7 +38,7 @@ const gedumaWebhook = ({ reqBody }) => {
           imageUrlToBase64(`${Endpoints.TELEGRAM_FILE_BASE_URL}/${data.result.file_path}`)
             .then(base64 => {
               obj.screenShotData = base64
-              return saveArchive(obj)
+              resolve(saveArchive(obj))
             })
             .catch(err => {
               console.error('Error converting buffer to base64:', err)
