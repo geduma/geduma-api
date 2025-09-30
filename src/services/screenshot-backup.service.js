@@ -3,8 +3,20 @@ import { Endpoints } from '../constants/endpoints.js'
 import { imageUrlToBase64 } from '../utils/imageUrlToBase64.js'
 
 const getSummary = ({ schema }) => {
-  return archivesSchema.find({ schema })
-    .select('-screenShotData')
+  return new Promise((resolve, reject) => {
+    archivesSchema.find({ schema })
+      .select('-screenShotData')
+      .sort('backupDate')
+      .then(data => {
+        const summaryList = JSON.parse(JSON.stringify(data))
+        resolve(summaryList.map(item => {
+          const dateObject = new Date(item.backupDate * 1000)
+          item.backupDateString = dateObject.toDateString() + ' ' + dateObject.toTimeString()
+          return item
+        }))
+      })
+      .catch(err => reject(err))
+  })
 }
 
 const getSummaryAll = ({ schema }) => {
@@ -17,7 +29,7 @@ const gedumaWebhook = ({ reqBody }) => {
 
     obj.schema = 'geduma'
     obj.userName = reqBody.message.from.username || 'unknown'
-    obj.backupDate = reqBody.message.date || Date.now()
+    obj.backupDate = reqBody.message.date
     obj.textMessage = reqBody.message.text || reqBody.message.caption || ''
 
     if (reqBody.message.photo.length > 0) {
