@@ -24,13 +24,26 @@ const gedumaWebhook = async ({ reqBody }) => {
 
     console.log('Fetching telegram image with file_id:', imgObj)
 
-    const getFile = await fetch(`${Endpoints.TELEGRAM_GET_FILE}?file_id=${imgObj.file_id}`)
+    const getFile = await fetch(`${Endpoints.TELEGRAM_GET_FILE}?file_id=${imgObj.file_id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      }
+    })
+
     getFile
       .then(res => res.json())
       .then(data => {
         console.log('Telegram file data:', data)
         obj.filePath = data.result.file_path
-        fetch(`${Endpoints.TELEGRAM_FILE_BASE_URL}/${data.result.file_path}`)
+        fetch(`${Endpoints.TELEGRAM_FILE_BASE_URL}/${data.result.file_path}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json'
+          }
+        })
           .then(res => res.buffer())
           .then(buffer => {
             obj.screenShotData = buffer.toString('base64')
