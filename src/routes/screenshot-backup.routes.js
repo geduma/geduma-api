@@ -9,10 +9,16 @@ export function screenshotBackupRouter (app) {
   })
 
   app.get(`${path}/summary/:schema`, (req, res) => {
-    res.send(generalResponse.ok(service.getSummary(req.params.schema)))
+    service.getSummary({ schema: req.params.schema })
+      .then(data => {
+        if (data.length <= 0) res.status(204)
+        res.send(generalResponse.ok(data))
+      }).catch((err) => res.send(generalResponse.error(err)))
   })
 
   app.post(`${path}/geduma/webhook`, (req, res) => {
-    res.send(generalResponse.ok(service.gedumaWebhook({ reqBody: req.body })))
+    service.gedumaWebhook({ reqBody: req.body })
+      .then(data => res.send(generalResponse.ok(data)))
+      .catch((err) => res.send(generalResponse.error(err)))
   })
 }

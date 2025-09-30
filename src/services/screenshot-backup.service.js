@@ -13,7 +13,7 @@ const gedumaWebhook = ({ reqBody }) => {
   obj.schema = 'geduma'
   obj.userName = reqBody.channel_post.sender_chat.username || 'unknown'
   obj.backupDate = reqBody.channel_post.date || Date.now()
-  obj.filePath = ''
+  obj.filePath = 'filePath_url.example'
   obj.textMessage = reqBody.channel_post.text || ''
   obj.screenShotData = '<base64_encoded_image>'
 
