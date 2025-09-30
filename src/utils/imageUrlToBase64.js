@@ -1,6 +1,7 @@
 import sharp from 'sharp'
 
 export const imageUrlToBase64 = (imageUrl) => {
+  console.log(imageUrl)
   return new Promise((resolve, reject) => {
     fetch(imageUrl)
       .then(response => response.arrayBuffer())
