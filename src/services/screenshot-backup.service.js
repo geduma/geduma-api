@@ -25,15 +25,13 @@ const gedumaWebhook = ({ reqBody }) => {
         return a.file_size > b.file_size ? a : b
       }, reqBody.message.photo[0])
 
-      fetch(`${Endpoints.TELEGRAM_GET_FILE}?file_id=${imgObj.file_id}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json'
-        }
-      })
+      console.log(reqBody.message.photo[0])
+      console.log(`${Endpoints.TELEGRAM_GET_FILE}?file_id=${imgObj.file_id}`)
+
+      fetch(`${Endpoints.TELEGRAM_GET_FILE}?file_id=${imgObj.file_id}`)
         .then(res => res.json())
         .then(data => {
+          console.log(data)
           obj.filePath = data.result.file_path
           if (obj.file_path !== undefined) Error('Empy file_path')
           imageUrlToBase64(`${Endpoints.TELEGRAM_FILE_BASE_URL}/${obj.file_path}`)
