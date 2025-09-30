@@ -6,5 +6,6 @@ dotenv.config()
 const configManagerConn = mongoose.createConnection(process.env.CONFIG_MANAGER_MONGODB_URI)
 const snippetVaultConn = mongoose.createConnection(process.env.SNIPPET_VAULT_MONGODB_URI)
 const shortUrlConn = mongoose.createConnection(process.env.SHORT_URL_MONGODB_URI)
+const screenShotBackupConn = mongoose.createConnection(process.env.SCREENSHOT_BACKUP_MONGODB_URI)
 
-export const conn = { configManagerConn, snippetVaultConn, shortUrlConn }
+export const conn = { configManagerConn, snippetVaultConn, shortUrlConn, screenShotBackupConn }
