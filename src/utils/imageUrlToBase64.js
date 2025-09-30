@@ -8,7 +8,7 @@ export const imageUrlToBase64 = (imageUrl) => {
             .reduce((data, byte) =>
               data + String.fromCharCode(byte), '')
         )
-        resolve(base64String)
+        resolve(`data:image/png;base64,${base64String}`)
       })
       .catch(err => {
         console.error(err)
