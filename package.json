@@ -1,13 +1,13 @@
 {
-  "name": "geduramc-api",
+  "name": "geduma-api",
   "version": "0.0.1",
-  "description": "geduramc-api",
+  "description": "geduma-api",
   "type": "module",
   "scripts": {
     "dev": "nodemon index.js",
     "start": "node index.js"
   },
-  "author": "geduramc",
+  "author": "geduma",
   "license": "ISC",
   "dependencies": {
     "cors": "2.8.5",
