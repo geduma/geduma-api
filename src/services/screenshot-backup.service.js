@@ -10,8 +10,7 @@ const getSummary = ({ schema }) => {
       .then(data => {
         const summaryList = JSON.parse(JSON.stringify(data))
         resolve(summaryList.map(item => {
-          const dateObject = new Date(item.backupDate * 1000)
-          item.backupDateString = dateObject.toDateString() + ' ' + dateObject.toTimeString()
+          item.backupDateString = new Date(item.backupDate).toLocaleString('de-DE', { timeZone: 'America/Bogota' })
           return item
         }))
       })
@@ -29,7 +28,7 @@ const gedumaWebhook = ({ reqBody }) => {
 
     obj.schema = 'geduma'
     obj.userName = reqBody.message.from.username || 'unknown'
-    obj.backupDate = reqBody.message.date
+    obj.backupDate = reqBody.message.date || Date.now()
     obj.textMessage = reqBody.message.text || reqBody.message.caption || ''
 
     if (reqBody.message.photo.length > 0) {
