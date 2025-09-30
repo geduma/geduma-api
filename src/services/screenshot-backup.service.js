@@ -1,6 +1,5 @@
 import archivesSchema from '../models/screenshot-backup/archives.model.js'
-import fetch from 'node-fetch'
-import { Endpoints } from '../config/endpoints.js'
+import { Endpoints } from '../constants/endpoints.js'
 
 const getSummary = ({ schema }) => {
   return archivesSchema.find({
