@@ -2,8 +2,7 @@ import jwt from 'jsonwebtoken'
 
 const auth = ({ name, user, key }, { apiKey, apiSecret }) => {
   return new Promise((resolve, reject) => {
-    // eslint-disable-next-line prefer-promise-reject-errors
-    if (key !== apiKey) reject('invalid or missing api key')
+    if (key !== apiKey) reject(new Error('invalid or missing api key'))
     resolve({
       token: jwt.sign({
         name,
