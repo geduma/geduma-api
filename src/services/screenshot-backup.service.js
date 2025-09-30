@@ -23,6 +23,7 @@ const gedumaWebhook = ({ reqBody }) => {
     }, reqBody.channel_post.photo[0])
 
     console.log('Fetching telegram image with file_id:', imgObj)
+    console.log(`${Endpoints.TELEGRAM_BOT_URL}${process.env.TELEGRAM_BOT_TOKEN}/getFile?file_id=${imgObj.file_id}`)
 
     fetch(`${Endpoints.TELEGRAM_BOT_URL}${process.env.TELEGRAM_BOT_TOKEN}/getFile?file_id=${imgObj.file_id}`, {
       method: 'GET',
@@ -35,6 +36,7 @@ const gedumaWebhook = ({ reqBody }) => {
       .then(data => {
         console.log('Telegram file data:', data)
         obj.filePath = data.result.file_path
+        console.log(`${Endpoints.TELEGRAM_BOT_URL}${process.env.TELEGRAM_BOT_TOKEN}/photos/${data.result.file_path}`)
         fetch(`${Endpoints.TELEGRAM_BOT_URL}${process.env.TELEGRAM_BOT_TOKEN}/photos/${data.result.file_path}`, {
           method: 'GET',
           headers: {
