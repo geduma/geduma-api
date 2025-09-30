@@ -9,39 +9,48 @@ const getSummary = ({ schema }) => {
 }
 
 const gedumaWebhook = ({ reqBody }) => {
-  const obj = {}
+  console.log(reqBody)
+  return new Promise((resolve, reject) => {
+    const obj = {}
 
-  obj.schema = 'geduma'
-  obj.userName = reqBody.channel_post.sender_chat.username || 'unknown'
-  obj.backupDate = reqBody.channel_post.date || Date.now()
-  obj.filePath = 'filePath_url.example'
-  obj.textMessage = reqBody.channel_post.text || reqBody.channel_post.caption || ''
-  obj.screenShotData = ''
+    obj.schema = 'geduma'
+    obj.userName = reqBody.channel_post.sender_chat.username || 'unknown'
+    obj.backupDate = reqBody.channel_post.date || Date.now()
+    obj.filePath = 'filePath_url.example'
+    obj.textMessage = reqBody.channel_post.text || reqBody.channel_post.caption || ''
+    obj.screenShotData = ''
 
-  if (reqBody.channel_post.photo) {
-    const imgObj = reqBody.channel_post.photo.reduce((a, b) => {
-      return a.file_size > b.file_size ? a : b
-    }, reqBody.channel_post.photo[0])
+    if (reqBody.channel_post.photo) {
+      const imgObj = reqBody.channel_post.photo.reduce((a, b) => {
+        return a.file_size > b.file_size ? a : b
+      }, reqBody.channel_post.photo[0])
 
-    fetch(`${Endpoints.TELEGRAM_GET_FILE}?file_id=${imgObj.file_id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json'
-      }
-    })
-      .then(res => res.json())
-      .then(data => {
-        obj.filePath = data.result.file_path
-        imageUrlToBase64(`${Endpoints.TELEGRAM_FILE_BASE_URL}/${data.result.file_path}`)
-          .then(base64 => {
-            obj.screenShotData = base64
-            return saveArchive(obj)
-          })
-          .catch(err => console.error('Error converting buffer to base64:', err))
+      fetch(`${Endpoints.TELEGRAM_GET_FILE}?file_id=${imgObj.file_id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        }
       })
-      .catch(err => console.error('Error fetching telegram image:', err))
-  } else return saveArchive(obj)
+        .then(res => res.json())
+        .then(data => {
+          obj.filePath = data.result.file_path
+          imageUrlToBase64(`${Endpoints.TELEGRAM_FILE_BASE_URL}/${data.result.file_path}`)
+            .then(base64 => {
+              obj.screenShotData = base64
+              return saveArchive(obj)
+            })
+            .catch(err => {
+              console.error('Error converting buffer to base64:', err)
+              reject(err)
+            })
+        })
+        .catch(err => {
+          console.error('Error fetching telegram image:', err)
+          reject(err)
+        })
+    } else resolve({})
+  })
 }
 
 const saveArchive = ({ schema, userName, filePath, textMessage, screenShotData }) => {
