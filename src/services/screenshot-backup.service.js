@@ -35,7 +35,7 @@ const gedumaWebhook = ({ reqBody }) => {
         .then(res => res.json())
         .then(data => {
           obj.filePath = data.result.file_path
-          if (obj.file_path.length <= 0) Error('Empy file_path')
+          if (obj.file_path !== undefined) Error('Empy file_path')
           imageUrlToBase64(`${Endpoints.TELEGRAM_FILE_BASE_URL}/${obj.file_path}`)
             .then(base64 => {
               obj.screenShotData = base64
