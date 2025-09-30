@@ -1,6 +1,6 @@
 import archivesSchema from '../models/screenshot-backup/archives.model.js'
 import { Endpoints } from '../constants/endpoints.js'
-import imageUrlToBase64 from '../utils/imageUrlToBase64.js'
+import { imageUrlToBase64 } from '../utils/imageUrlToBase64.js'
 
 const getSummary = ({ schema }) => {
   return archivesSchema.find({
