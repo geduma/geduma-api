@@ -7,14 +7,14 @@ const getSummary = ({ schema }) => {
   })
 }
 
-const gedumaWebhook = async ({ reqBody }) => {
+const gedumaWebhook = ({ reqBody }) => {
   const obj = {}
 
   obj.schema = 'geduma'
   obj.userName = reqBody.channel_post.sender_chat.username || 'unknown'
   obj.backupDate = reqBody.channel_post.date || Date.now()
   obj.filePath = 'filePath_url.example'
-  obj.textMessage = reqBody.channel_post.text || reqBody.channel_post.photo.caption || ''
+  obj.textMessage = reqBody.channel_post.text || reqBody.channel_post.caption || ''
   obj.screenShotData = ''
 
   if (reqBody.channel_post.photo) {
@@ -24,15 +24,13 @@ const gedumaWebhook = async ({ reqBody }) => {
 
     console.log('Fetching telegram image with file_id:', imgObj)
 
-    const getFile = await fetch(`${Endpoints.TELEGRAM_GET_FILE}?file_id=${imgObj.file_id}`, {
+    fetch(`${Endpoints.TELEGRAM_GET_FILE}?file_id=${imgObj.file_id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json'
       }
     })
-
-    getFile
       .then(res => res.json())
       .then(data => {
         console.log('Telegram file data:', data)
@@ -47,13 +45,12 @@ const gedumaWebhook = async ({ reqBody }) => {
           .then(res => res.buffer())
           .then(buffer => {
             obj.screenShotData = buffer.toString('base64')
+            return saveArchive(obj)
           })
+          .catch(err => console.error('Error converting buffer to base64:', err))
       })
       .catch(err => console.error('Error fetching telegram image:', err))
-  }
-
-  console.log('Saving archive:', obj)
-  return saveArchive(obj)
+  } else return saveArchive(obj)
 }
 
 const saveArchive = ({ schema, userName, filePath, textMessage, screenShotData }) => {
