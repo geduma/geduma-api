@@ -8,6 +8,10 @@ export function screenshotBackupRouter (app) {
     res.send({ message: 'screenshot-backup-api' })
   })
 
+  app.get(`${path}/summary/:schema`, (req, res) => {
+    res.send(generalResponse.ok(service.getSummary(req.params.schema)))
+  })
+
   app.post(`${path}/geduma/webhook`, (req, res) => {
     res.send(generalResponse.ok(service.gedumaWebhook({ reqBody: req.body })))
   })
