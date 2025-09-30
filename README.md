@@ -1,5 +1,5 @@
 ## API
-https://api.geduramc.com
+https://api.geduma.com
 
 Endpoints:
 
