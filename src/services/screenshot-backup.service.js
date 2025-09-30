@@ -1,5 +1,6 @@
 import archivesSchema from '../models/screenshot-backup/archives.model.js'
 import { Endpoints } from '../constants/endpoints.js'
+import imageUrlToBase64 from '../utils/imageUrlToBase64.js'
 
 const getSummary = ({ schema }) => {
   return archivesSchema.find({
@@ -32,16 +33,9 @@ const gedumaWebhook = ({ reqBody }) => {
       .then(res => res.json())
       .then(data => {
         obj.filePath = data.result.file_path
-        fetch(`${Endpoints.TELEGRAM_FILE_BASE_URL}/${data.result.file_path}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json'
-          }
-        })
-          .then(res => res.buffer())
-          .then(buffer => {
-            obj.screenShotData = buffer.toString('base64')
+        imageUrlToBase64(`${Endpoints.TELEGRAM_FILE_BASE_URL}/${data.result.file_path}`)
+          .then(base64 => {
+            obj.screenShotData = base64
             return saveArchive(obj)
           })
           .catch(err => console.error('Error converting buffer to base64:', err))
