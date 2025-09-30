@@ -8,7 +8,6 @@ const getSummary = ({ schema }) => {
 }
 
 const gedumaWebhook = async ({ reqBody }) => {
-  console.log(reqBody)
   const obj = {}
 
   obj.schema = 'geduma'
@@ -23,10 +22,13 @@ const gedumaWebhook = async ({ reqBody }) => {
       return a.file_size > b.file_size ? a : b
     }, reqBody.channel_post.photo[0])
 
+    console.log('Fetching telegram image with file_id:', imgObj)
+
     const getFile = await fetch(`${Endpoints.TELEGRAM_GET_FILE}?file_id=${imgObj.file_id}`)
     getFile
       .then(res => res.json())
       .then(data => {
+        console.log('Telegram file data:', data)
         obj.filePath = data.result.file_path
         fetch(`${Endpoints.TELEGRAM_FILE_BASE_URL}/${data.result.file_path}`)
           .then(res => res.buffer())
@@ -37,6 +39,7 @@ const gedumaWebhook = async ({ reqBody }) => {
       .catch(err => console.error('Error fetching telegram image:', err))
   }
 
+  console.log('Saving archive:', obj)
   return saveArchive(obj)
 }
 
