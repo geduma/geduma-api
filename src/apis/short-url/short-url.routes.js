@@ -1,7 +1,6 @@
-import { generalResponse } from '../utils/generalResponse.js'
-import { service } from '../services/short-url.service.js'
-import { service as authService } from '../services/auth.service.js'
-import { security } from '../interceptors/security.interceptor.js'
+import { generalResponse } from '../../utils/generalResponse.js'
+import { service } from '../short-url/services/custom-url.service.js'
+import { security } from '../../interceptors/security.interceptor.js'
 
 export function shortUrlRouter (app) {
   const path = '/short-url'
@@ -21,14 +20,14 @@ export function shortUrlRouter (app) {
   app.post(`${path}/auth`, async (req, res) => {
     try {
       const { name, user, key } = req.body
-      const data = await authService.auth({ name, user, key }, { apiKey: process.env.API_SHORT_URL_KEY, apiSecret: process.env.API_SHORT_URL_TOKEN_SECRET })
+      const data = await security.auth({ name, user, key }, { apiKey: process.env.API_SHORT_URL_KEY, apiSecret: process.env.API_SHORT_URL_TOKEN_SECRET })
       res.send(generalResponse.ok(data))
     } catch (error) {
       res.status(400).send(generalResponse.error(error))
     }
   })
 
-  app.post(`${path}/short`, security.verifyJWT, (req, res) => {
+  app.post(`${path}/short`, security.verify, (req, res) => {
     const shortUrl = Math.random()
       .toString(36)
       .substr(2, 6)
@@ -40,7 +39,7 @@ export function shortUrlRouter (app) {
       }).catch((err) => res.send(generalResponse.error(err)))
   })
 
-  app.post(`${path}/short-by-project`, security.verifyJWT, (req, res) => {
+  app.post(`${path}/short-by-project`, security.verify, (req, res) => {
     const shortUrl = Math.random()
       .toString(36)
       .substr(2, 6)

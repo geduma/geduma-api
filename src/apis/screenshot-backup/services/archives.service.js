@@ -1,11 +1,10 @@
-import archivesSchema from '../models/screenshot-backup/archives.model.js'
-import { Endpoints } from '../constants/endpoints.js'
-import { imageUrlToBase64 } from '../utils/imageUrlToBase64.js'
+import archivesSchema from '../models/archives.model.js'
+import { Endpoints } from '../../../constants/endpoints.js'
+import { imageUrlToBase64 } from '../../../utils/imageUrlToBase64.js'
 
 const getSummary = ({ schema }) => {
   return new Promise((resolve, reject) => {
     archivesSchema.find({ schema })
-      .select('-screenShotData')
       .sort('backupDate')
       .then(data => {
         const summaryList = JSON.parse(JSON.stringify(data))
@@ -18,17 +17,13 @@ const getSummary = ({ schema }) => {
   })
 }
 
-const getSummaryAll = ({ schema }) => {
-  return archivesSchema.find({ schema })
-}
-
-const gedumaWebhook = ({ reqBody }) => {
+const telegramWebhook = ({ reqBody }) => {
   return new Promise((resolve, reject) => {
     const obj = {}
 
     obj.schema = 'geduma'
     obj.userName = reqBody.message.from.username || 'unknown'
-    obj.backupDate = reqBody.message.date || Date.now()
+    obj.backupDate = Date.now()
     obj.textMessage = reqBody.message.text || reqBody.message.caption || ''
 
     if (reqBody.message.photo.length > 0) {
@@ -70,4 +65,4 @@ const saveArchive = ({ schema, userName, filePath, textMessage, screenShotData }
   })
 }
 
-export const service = { getSummary, getSummaryAll, gedumaWebhook }
+export const service = { getSummary, telegramWebhook }

@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import { conn } from '../db-config.js'
+import { conn } from '../../../db.config.js'
 
 const snippetSchema = mongoose.Schema({
   group: {

@@ -1,5 +1,5 @@
-import { generalResponse } from '../utils/generalResponse.js'
-import { service } from '../services/config-manager.service.js'
+import { generalResponse } from '../../utils/generalResponse.js'
+import { service } from './services/configurations.service.js'
 
 export function configManagerRouter (app) {
   const path = '/config-manager'

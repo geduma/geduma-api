@@ -1,5 +1,5 @@
-import { Endpoints } from '../constants/endpoints.js'
-import snippetsSchema from '../models/snippet-vault/snippets.model.js'
+import { Endpoints } from '../../../constants/endpoints.js'
+import snippetsSchema from '../models/snippets.model.js'
 
 const authGitHub = (code) => {
   return new Promise((resolve, reject) => {
