@@ -1,4 +1,4 @@
-import customUrlsShema from '../models/short-url/custom-urls.model.js'
+import customUrlsShema from '../models/custom-urls.model.js'
 
 const getByShort = ({ id }) => {
   return customUrlsShema.find({

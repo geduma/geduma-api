@@ -1,5 +1,5 @@
-import { generalResponse } from '../utils/generalResponse.js'
-import { service } from '../services/snippet-vault.service.js'
+import { generalResponse } from '../../utils/generalResponse.js'
+import { service } from './services/snippet.service.js'
 
 export function snippetVaultRouter (app) {
   const path = '/snippet-vault'
