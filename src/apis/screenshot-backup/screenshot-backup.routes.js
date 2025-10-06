@@ -18,16 +18,6 @@ export function screenshotBackupRouter (app) {
       }).catch((err) => res.send(generalResponse.error(err)))
   })
 
-  app.post(`${path}/auth`, async (req, res) => {
-    try {
-      const { name, user, key } = req.body
-      const data = await security.auth({ name, user, key }, { apiKey: process.env.API_SCREENSHOT_BACKUP_KEY, apiSecret: process.env.API_SCREENSHOT_BACKUP_TOKEN_SECRET })
-      res.send(generalResponse.ok(data))
-    } catch (error) {
-      res.status(400).send(generalResponse.error(error))
-    }
-  })
-
   app.post(`${path}/geduma/webhook`, (req, res) => {
     service.telegramWebhook({ reqBody: req.body })
       .then(data => res.send(generalResponse.ok(data)))
