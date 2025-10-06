@@ -3,8 +3,11 @@ import dotenv from 'dotenv'
 import morgan from 'morgan'
 import cors from 'cors'
 import { router } from './src/main.router.js'
+import { validateEnv } from './src/env-check.js'
 
 dotenv.config()
+validateEnv()
+
 const app = express()
 
 app.set('port', (process.env.PORT != null) ? process.env.PORT : 3000)

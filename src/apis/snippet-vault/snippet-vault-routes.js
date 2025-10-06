@@ -8,13 +8,6 @@ export function snippetVaultRouter (app) {
     res.send(generalResponse.ok({ message: 'snippet-vault-api' }))
   })
 
-  app.get(`${path}/auth`, (req, res) => {
-    service.authGitHub(req.query.code)
-      .then(data => {
-        res.send(generalResponse.ok(data))
-      }).catch((err) => res.send(generalResponse.error(err)))
-  })
-
   app.get(`${path}/all`, (_, res) => {
     service.getAll()
       .then(data => {

@@ -1,6 +1,4 @@
 import archivesSchema from '../models/archives.model.js'
-import { Endpoints } from '../../../constants/endpoints.js'
-import { imageUrlToBase64 } from '../../../utils/imageUrlToBase64.js'
 
 const getSummary = ({ schema }) => {
   return new Promise((resolve, reject) => {
@@ -17,44 +15,6 @@ const getSummary = ({ schema }) => {
   })
 }
 
-const telegramWebhook = ({ reqBody }) => {
-  return new Promise((resolve, reject) => {
-    const obj = {}
-
-    obj.schema = 'geduma'
-    obj.userName = reqBody.message.from.username || 'unknown'
-    obj.backupDate = Date.now()
-    obj.textMessage = reqBody.message.text || reqBody.message.caption || ''
-
-    if (reqBody.message.photo.length > 0) {
-      const imgObj = reqBody.message.photo.reduce((a, b) => {
-        return a.file_size > b.file_size ? a : b
-      }, reqBody.message.photo[0])
-
-      fetch(`${Endpoints.TELEGRAM_GET_FILE}?file_id=${imgObj.file_id}`)
-        .then(res => res.json())
-        .then(data => {
-          obj.filePath = data.result.file_path
-          imageUrlToBase64(`${Endpoints.TELEGRAM_FILE_BASE_URL}/${obj.filePath}`)
-            .then(base64 => {
-              obj.screenShotData = base64
-              resolve(saveArchive(obj))
-            })
-            .catch(err => {
-              console.error('Error converting buffer to base64:', err)
-              reject(err)
-            })
-        })
-        .catch(err => {
-          console.error('Error fetching telegram image:', err)
-          reject(err)
-        })
-    } else resolve({})
-
-    fetch(`${Endpoints.TELEGRAM_DELETE_MESSAGE}?chat_id=${reqBody.message.chat.id}&message_id=${reqBody.message.message_id}`)
-  })
-}
-
 const saveArchive = ({ schema, userName, filePath, textMessage, screenShotData }) => {
   return archivesSchema.create({
     schema,
@@ -65,4 +25,4 @@ const saveArchive = ({ schema, userName, filePath, textMessage, screenShotData }
   })
 }
 
-export const service = { getSummary, telegramWebhook }
+export const service = { getSummary, saveArchive }
