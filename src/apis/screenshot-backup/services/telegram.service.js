@@ -8,7 +8,7 @@ const webhook = ({ reqBody, schema }) => {
 
     obj.schema = schema || 'geduma'
     obj.userName = reqBody.message.from.username || 'unknown'
-    obj.backupDate = Date.now()
+    obj.backupDate = new Date().getTime()
     obj.textMessage = reqBody.message.text || reqBody.message.caption || ''
 
     if (reqBody.message.photo.length > 0) {
