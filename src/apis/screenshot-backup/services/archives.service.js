@@ -25,4 +25,8 @@ const saveArchive = ({ schema, userName, filePath, textMessage, screenShotData }
   })
 }
 
-export const service = { getSummary, saveArchive }
+const deleteArchive = ({ id }) => {
+  return archivesSchema.deleteOne({ _id: id })
+}
+
+export const service = { getSummary, saveArchive, deleteArchive }

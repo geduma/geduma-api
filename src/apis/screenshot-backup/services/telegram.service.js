@@ -11,6 +11,12 @@ const webhook = ({ reqBody, schema }) => {
     obj.backupDate = new Date().getTime()
     obj.textMessage = reqBody.message.text || reqBody.message.caption || ''
 
+    if (obj.textMessage.includes('delete')) {
+      archiveService.deleteArchive({ id: obj.textMessage.split('delete ')[1] })
+      sendMessage({ chatId: reqBody.message.chat.id, text: `Requested deletion of archive ID: ${obj.textMessage.split('delete ')[1]}` })
+      resolve({ message: 'Delete request processed' })
+    }
+
     if (reqBody.message.photo.length > 0) {
       const imgObj = reqBody.message.photo.reduce((a, b) => {
         return a.file_size > b.file_size ? a : b
@@ -23,7 +29,9 @@ const webhook = ({ reqBody, schema }) => {
           imageUrlToBase64(`${Endpoints.TELEGRAM_FILE_BASE_URL}/${obj.filePath}`)
             .then(base64 => {
               obj.screenShotData = base64
-              resolve(archiveService.saveArchive(obj))
+              const savedArchive = archiveService.saveArchive(obj)
+              sendMessage({ chatId: reqBody.message.chat.id, text: `Screenshot received and is being processed. ${savedArchive._id}` })
+              resolve(savedArchive)
             })
             .catch(err => {
               console.error('Error converting buffer to base64:', err)
@@ -36,12 +44,18 @@ const webhook = ({ reqBody, schema }) => {
         })
     } else resolve({})
 
-    deleteMessage({ chatId: reqBody.message.chat.id, messageId: reqBody.message.message_id })
+    setTimeout(() => {
+      deleteMessage({ chatId: reqBody.message.chat.id, messageId: reqBody.message.message_id })
+    }, 15000)
   })
 }
 
 const deleteMessage = ({ chatId, messageId }) => {
   fetch(`${Endpoints.TELEGRAM_DELETE_MESSAGE}?chat_id=${chatId}&message_id=${messageId}`)
+}
+
+const sendMessage = ({ chatId, text }) => {
+  fetch(`${Endpoints.TELEGRAM_SEND_MESSAGE}?chat_id=${chatId}&text=${encodeURIComponent(text)}`)
 }
 
 export const service = { webhook, deleteMessage }
