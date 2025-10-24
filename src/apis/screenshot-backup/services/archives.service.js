@@ -7,7 +7,7 @@ const getSummary = ({ schema }) => {
       .then(data => {
         const summaryList = JSON.parse(JSON.stringify(data))
         resolve(summaryList.map(item => {
-          item.backupDateString = new Date(item.backupDate).toLocaleString('de-DE', { timeZone: 'America/Bogota' })
+          item.backupDateString = new Date(item.backupDate).toLocaleString('en-US', { timeZone: 'America/Bogota' })
           return item
         }))
       })
