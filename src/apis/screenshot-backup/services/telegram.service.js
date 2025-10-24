@@ -55,7 +55,11 @@ const deleteMessage = ({ chatId, messageId }) => {
 }
 
 const sendMessage = ({ chatId, text }) => {
-  fetch(`${Endpoints.TELEGRAM_SEND_MESSAGE}?chat_id=${chatId}&text=${encodeURIComponent(text)}`)
+  fetch(`${Endpoints.TELEGRAM_SEND_MESSAGE}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: { chat_id: chatId, text }
+  })
 }
 
 export const service = { webhook, deleteMessage }
