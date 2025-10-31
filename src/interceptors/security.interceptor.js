@@ -54,8 +54,8 @@ const verify = (req, res, next) => {
 
 const verifyJWT = async ({ token, apiSecret }) => {
   let res = true
-  const jwtDecoded = jwt.decode(token.split(' ')[1])
-  const storedToken = await redis.get(jwtDecoded.jti)
+  const jwtDecoded = (token) ? jwt.decode(token.split(' ')[1]) : null
+  const storedToken = (jwtDecoded) ? await redis.get(jwtDecoded.jti) : null
 
   try {
     if (!token) res = false
