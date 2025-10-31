@@ -29,9 +29,7 @@ const webhook = ({ reqBody, schema }) => {
           imageUrlToBase64(`${Endpoints.TELEGRAM_FILE_BASE_URL}/${obj.filePath}`)
             .then(base64 => {
               obj.screenShotData = base64
-              const savedArchive = archiveService.saveArchive(obj)
-              sendMessage({ chatId: reqBody.message.chat.id, text: `Screenshot received and is being processed. ${savedArchive._id}` })
-              resolve(savedArchive)
+              resolve(archiveService.saveArchive(obj))
             })
             .catch(err => {
               console.error('Error converting buffer to base64:', err)
