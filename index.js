@@ -4,6 +4,7 @@ import morgan from 'morgan'
 import cors from 'cors'
 import { router } from './src/main.router.js'
 import { validateEnv } from './src/env-check.js'
+import { jobs } from './src/jobs/index.js'
 
 dotenv.config()
 validateEnv()
@@ -19,6 +20,9 @@ app.use(cors())
 
 // routes
 router(app)
+
+// jobs
+jobs()
 
 app.listen(app.get('port'), () => {
   console.log(`🚀 [port: ${app.get('port')}] server running...`)

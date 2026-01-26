@@ -69,4 +69,10 @@ const verifyJWT = async ({ token, apiSecret }) => {
   return res
 }
 
-export const security = { verify, auth }
+const cleanOldTokens = () => {
+  return redis.flushdb().then(async () => {
+    console.log('Flushing all tokens from Redis...')
+  })
+}
+
+export const security = { verify, auth, cleanOldTokens }
