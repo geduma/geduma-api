@@ -1,7 +1,7 @@
 import { Constants } from '../constants/constants.js'
 
 export const generateReport = (screenShotList) => {
-  let html = Constants.INIT_HTML
+  let html = Constants.INIT_SUMMARY_HTML
 
   screenShotList.forEach(item => {
     let tableItem = '<tr><th>'
@@ -11,5 +11,5 @@ export const generateReport = (screenShotList) => {
     html += tableItem
   })
 
-  return html + Constants.END_HTML
+  return html + Constants.END_SUMMARY_HTML
 }
