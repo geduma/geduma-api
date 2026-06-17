@@ -1,7 +1,10 @@
 import jwt from 'jsonwebtoken'
+import dotenv from 'dotenv'
 import { Redis } from '@upstash/redis'
 import { v4 as uuidv4 } from 'uuid'
 import { generalResponse } from '../utils/generalResponse.js'
+
+dotenv.config()
 
 const apiKeys = {
   'config-manager': null,

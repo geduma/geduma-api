@@ -1,4 +1,7 @@
 import mongoose from 'mongoose'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 const authConn = mongoose.createConnection(process.env.GEDUMA_AUTH_MONGODB_URI)
 const configManagerConn = mongoose.createConnection(process.env.CONFIG_MANAGER_MONGODB_URI)
