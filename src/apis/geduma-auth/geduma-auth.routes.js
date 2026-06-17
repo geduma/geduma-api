@@ -15,7 +15,9 @@ export function authRouter (app) {
 
   app.post(`${path}`, async (req, res) => {
     try {
+      if (!req.body) throw new Error('Request body is required')
       const { name, user, key, data } = req.body
+      if (!name || !key) throw new Error('name and key are required')
       const result = await security.auth({ name, user, key, data })
       res.send(generalResponse.ok(result))
     } catch (error) {
