@@ -13,7 +13,7 @@ export function configManagerRouter (app) {
       .then(data => {
         if (data.length <= 0) res.status(204)
         res.send(generalResponse.ok(data))
-      }).catch((err) => res.send(generalResponse.error(err)))
+      }).catch((err) => res.send(generalResponse.error(err.message)))
   })
 
   app.get(`${path}/owner/:owner`, (req, res) => {
@@ -21,7 +21,7 @@ export function configManagerRouter (app) {
       .then(data => {
         if (data.length <= 0) res.status(204)
         res.send(generalResponse.ok(data))
-      }).catch((err) => res.send(generalResponse.error(err)))
+      }).catch((err) => res.send(generalResponse.error(err.message)))
   })
 
   app.get(`${path}/schema/:owner/:schema`, (req, res) => {
@@ -32,7 +32,7 @@ export function configManagerRouter (app) {
       .then(data => {
         if (data.length <= 0) res.status(204)
         res.send(generalResponse.ok(data))
-      }).catch((err) => res.send(generalResponse.error(err)))
+      }).catch((err) => res.send(generalResponse.error(err.message)))
   })
 
   app.get(`${path}/name/:owner/:schema/:name`, (req, res) => {
@@ -44,6 +44,6 @@ export function configManagerRouter (app) {
       .then(data => {
         if (data.length <= 0) res.status(204)
         res.send(generalResponse.ok(data))
-      }).catch((err) => res.send(generalResponse.error(err)))
+      }).catch((err) => res.send(generalResponse.error(err.message)))
   })
 }

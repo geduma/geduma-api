@@ -4,19 +4,23 @@ import { conn } from '../../../db.config.js'
 const configurationsSchema = new mongoose.Schema({
   owner: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   schema: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   name: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   value: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   expiration: {
     type: Number,
@@ -26,6 +30,6 @@ const configurationsSchema = new mongoose.Schema({
     type: Number,
     required: true
   }
-})
+}, { timestamps: true })
 
 export default conn.configManagerConn.model('configurations', configurationsSchema)

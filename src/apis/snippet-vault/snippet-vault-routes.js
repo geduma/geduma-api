@@ -13,6 +13,6 @@ export function snippetVaultRouter (app) {
       .then(data => {
         if (data.length <= 0) res.status(204)
         res.send(generalResponse.ok(data))
-      }).catch((err) => res.send(generalResponse.error(err)))
+      }).catch((err) => res.send(generalResponse.error(err.message)))
   })
 }

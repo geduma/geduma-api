@@ -8,20 +8,23 @@ const snippetSchema = mongoose.Schema({
   },
   title: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   description: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   tags: {
     type: String,
-    required: false
+    required: false,
+    trim: true
   },
   snippetValue: {
     type: String,
     required: true
   }
-})
+}, { timestamps: true })
 
 export default conn.snippetVaultConn.model('snippets', snippetSchema)

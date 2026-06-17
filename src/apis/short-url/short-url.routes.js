@@ -14,30 +14,30 @@ export function shortUrlRouter (app) {
       .then(data => {
         if (data.length <= 0) res.status(204)
         res.send(generalResponse.ok(data))
-      }).catch((err) => res.send(generalResponse.error(err)))
+      }).catch((err) => res.send(generalResponse.error(err.message)))
   })
 
   app.post(`${path}/short`, security.verify, (req, res) => {
     const shortUrl = Math.random()
       .toString(36)
-      .substr(2, 6)
+      .substring(2, 8)
 
     service.saveUrl({ originUrl: req.body.url, shortUrl })
       .then(data => {
         if (data.length <= 0) res.status(204)
         res.send(generalResponse.ok(data))
-      }).catch((err) => res.send(generalResponse.error(err)))
+      }).catch((err) => res.send(generalResponse.error(err.message)))
   })
 
   app.post(`${path}/short-by-project`, security.verify, (req, res) => {
     const shortUrl = Math.random()
       .toString(36)
-      .substr(2, 6)
+      .substring(2, 8)
 
     service.saveUrlByProject({ originUrl: req.body.url, shortUrl, project: req.body.project })
       .then(data => {
         if (data.length <= 0) res.status(204)
         res.send(generalResponse.ok(data))
-      }).catch((err) => res.send(generalResponse.error(err)))
+      }).catch((err) => res.send(generalResponse.error(err.message)))
   })
 }

@@ -1,10 +1,7 @@
 import jwt from 'jsonwebtoken'
-import dotenv from 'dotenv'
 import { Redis } from '@upstash/redis'
 import { v4 as uuidv4 } from 'uuid'
 import { generalResponse } from '../utils/generalResponse.js'
-
-dotenv.config()
 
 const apiKeys = {
   'config-manager': null,
@@ -43,7 +40,7 @@ const verify = (req, res, next) => {
   const token = req.headers.authorization
   verifyJWT({
     token,
-    apiSecret: apiSecrets[req.url.split('/')[1]]
+    apiSecret: apiSecrets[req.path.split('/')[1]]
   }).then((valid) => {
     if (valid) {
       redis.del(jwt.decode(token.split(' ')[1]).jti)
