@@ -54,4 +54,49 @@ export function configManagerRouter (app) {
       res.send(generalResponse.error(err.message))
     }
   })
+
+  app.post(`${path}`, async (req, res) => {
+    try {
+      if (!req.body) throw new Error('Request body is required')
+      const { owner, schema, name, value, expiration } = req.body
+      if (!owner || !schema || !name) throw new Error('owner, schema and name are required')
+      const data = await service.create({ owner, schema, name, value, expiration })
+      res.status(201).send(generalResponse.ok(data))
+    } catch (err) {
+      if (err.code === 11000) return res.status(409).send(generalResponse.error('Configuration already exists'))
+      res.status(400).send(generalResponse.error(err.message))
+    }
+  })
+
+  app.put(`${path}/name/:owner/:schema/:name`, async (req, res) => {
+    try {
+      if (!req.body) throw new Error('Request body is required')
+      const { value, expiration } = req.body
+      const data = await service.update({
+        ownerStr: req.params.owner,
+        schemaStr: req.params.schema,
+        nameStr: req.params.name,
+        value,
+        expiration
+      })
+      if (!data) return res.status(404).send(generalResponse.error('Configuration not found'))
+      res.send(generalResponse.ok(data))
+    } catch (err) {
+      res.status(400).send(generalResponse.error(err.message))
+    }
+  })
+
+  app.delete(`${path}/name/:owner/:schema/:name`, async (req, res) => {
+    try {
+      const data = await service.remove({
+        ownerStr: req.params.owner,
+        schemaStr: req.params.schema,
+        nameStr: req.params.name
+      })
+      if (!data) return res.status(404).send(generalResponse.error('Configuration not found'))
+      res.send(generalResponse.ok({ message: 'Configuration deleted' }))
+    } catch (err) {
+      res.status(400).send(generalResponse.error(err.message))
+    }
+  })
 }

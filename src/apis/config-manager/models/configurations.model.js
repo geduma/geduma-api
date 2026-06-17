@@ -28,8 +28,10 @@ const configurationsSchema = new mongoose.Schema({
   },
   key: {
     type: Number,
-    required: true
+    required: false
   }
 }, { timestamps: true })
+
+configurationsSchema.index({ owner: 1, schema: 1, name: 1 }, { unique: true })
 
 export default conn.configManagerConn.model('configurations', configurationsSchema)
