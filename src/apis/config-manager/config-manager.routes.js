@@ -8,42 +8,50 @@ export function configManagerRouter (app) {
     res.send(generalResponse.ok({ message: 'config-manager-api' }))
   })
 
-  app.get(`${path}/all`, (_, res) => {
-    service.getAll()
-      .then(data => {
-        if (data.length <= 0) res.status(204)
-        res.send(generalResponse.ok(data))
-      }).catch((err) => res.send(generalResponse.error(err.message)))
+  app.get(`${path}/all`, async (_, res) => {
+    try {
+      const data = await service.getAll()
+      if (data.length <= 0) return res.status(204).end()
+      res.send(generalResponse.ok(data))
+    } catch (err) {
+      res.send(generalResponse.error(err.message))
+    }
   })
 
-  app.get(`${path}/owner/:owner`, (req, res) => {
-    service.getByOwner({ ownerStr: req.params.owner })
-      .then(data => {
-        if (data.length <= 0) res.status(204)
-        res.send(generalResponse.ok(data))
-      }).catch((err) => res.send(generalResponse.error(err.message)))
+  app.get(`${path}/owner/:owner`, async (req, res) => {
+    try {
+      const data = await service.getByOwner({ ownerStr: req.params.owner })
+      if (data.length <= 0) return res.status(204).end()
+      res.send(generalResponse.ok(data))
+    } catch (err) {
+      res.send(generalResponse.error(err.message))
+    }
   })
 
-  app.get(`${path}/schema/:owner/:schema`, (req, res) => {
-    service.getBySchema({
-      ownerStr: req.params.owner,
-      schemaStr: req.params.schema
-    })
-      .then(data => {
-        if (data.length <= 0) res.status(204)
-        res.send(generalResponse.ok(data))
-      }).catch((err) => res.send(generalResponse.error(err.message)))
+  app.get(`${path}/schema/:owner/:schema`, async (req, res) => {
+    try {
+      const data = await service.getBySchema({
+        ownerStr: req.params.owner,
+        schemaStr: req.params.schema
+      })
+      if (data.length <= 0) return res.status(204).end()
+      res.send(generalResponse.ok(data))
+    } catch (err) {
+      res.send(generalResponse.error(err.message))
+    }
   })
 
-  app.get(`${path}/name/:owner/:schema/:name`, (req, res) => {
-    service.getByName({
-      ownerStr: req.params.owner,
-      schemaStr: req.params.schema,
-      nameStr: req.params.name
-    })
-      .then(data => {
-        if (data.length <= 0) res.status(204)
-        res.send(generalResponse.ok(data))
-      }).catch((err) => res.send(generalResponse.error(err.message)))
+  app.get(`${path}/name/:owner/:schema/:name`, async (req, res) => {
+    try {
+      const data = await service.getByName({
+        ownerStr: req.params.owner,
+        schemaStr: req.params.schema,
+        nameStr: req.params.name
+      })
+      if (data.length <= 0) return res.status(204).end()
+      res.send(generalResponse.ok(data))
+    } catch (err) {
+      res.send(generalResponse.error(err.message))
+    }
   })
 }

@@ -8,11 +8,13 @@ export function snippetVaultRouter (app) {
     res.send(generalResponse.ok({ message: 'snippet-vault-api' }))
   })
 
-  app.get(`${path}/all`, (_, res) => {
-    service.getAll()
-      .then(data => {
-        if (data.length <= 0) res.status(204)
-        res.send(generalResponse.ok(data))
-      }).catch((err) => res.send(generalResponse.error(err.message)))
+  app.get(`${path}/all`, async (_, res) => {
+    try {
+      const data = await service.getAll()
+      if (data.length <= 0) return res.status(204).end()
+      res.send(generalResponse.ok(data))
+    } catch (err) {
+      res.send(generalResponse.error(err.message))
+    }
   })
 }
