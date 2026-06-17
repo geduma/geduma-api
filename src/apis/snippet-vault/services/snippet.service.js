@@ -35,4 +35,30 @@ const getAll = () => {
   return snippetsSchema.find()
 }
 
-export const service = { authGitHub, getAll }
+const getById = ({ id }) => {
+  return snippetsSchema.findById(id)
+}
+
+const getByGroup = ({ group }) => {
+  return snippetsSchema.find({ group })
+}
+
+const create = ({ group, title, description, tags, snippetValue }) => {
+  return snippetsSchema.create({ group, title, description, tags, snippetValue })
+}
+
+const update = ({ id, group, title, description, tags, snippetValue }) => {
+  const updateFields = {}
+  if (group !== undefined) updateFields.group = group
+  if (title !== undefined) updateFields.title = title
+  if (description !== undefined) updateFields.description = description
+  if (tags !== undefined) updateFields.tags = tags
+  if (snippetValue !== undefined) updateFields.snippetValue = snippetValue
+  return snippetsSchema.findByIdAndUpdate(id, { $set: updateFields }, { new: true, runValidators: true })
+}
+
+const remove = ({ id }) => {
+  return snippetsSchema.findByIdAndDelete(id)
+}
+
+export const service = { authGitHub, getAll, getById, getByGroup, create, update, remove }

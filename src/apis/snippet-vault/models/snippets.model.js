@@ -27,4 +27,6 @@ const snippetSchema = mongoose.Schema({
   }
 }, { timestamps: true })
 
+snippetSchema.index({ group: 1 })
+
 export default conn.snippetVaultConn.model('snippets', snippetSchema)

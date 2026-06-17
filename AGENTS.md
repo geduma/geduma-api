@@ -15,15 +15,15 @@ npm run dev            # nodemon (hot reload)
 npm start              # production
 ```
 
-## Linting
+## Linting & Testing
 
 Uses **standard** (`.eslintConfig` in package.json extends `standard/eslintrc.json`).
 
 ```bash
-npx standard --fix src/
+npx standard --fix src/   # lint src/
+npx standard --global afterEach --global describe --global it --global expect --global vi --global beforeEach test/   # lint test/
+npm test                  # vitest run
 ```
-
-No test framework exists yet.
 
 ---
 
@@ -82,7 +82,7 @@ generalResponse.error(msg)  // { ok: false, msg,           data: [] }
 Empty result sets return **204 No Content** via `res.status(204)` before `res.send(...)`.
 
 ### Authentication layers
-- **No auth:** config-manager (all endpoints), health checks, snippet-vault/all, short-url GET, auth endpoints.
+- **No auth:** config-manager (all endpoints), health checks, snippet-vault (all endpoints), short-url GET, auth endpoints.
 - **JWT required:** short-url POST routes, screenshot-backup summary.
 
 To add auth to a route:
@@ -107,21 +107,19 @@ export default conn.snippetVaultConn.model('snippets', schema)
 - **No semicolons** (Standard style; let Prettier handle it if added later).
 - **`camelCase`** for variables and functions.
 - **Arrow functions** preferred over `function` keyword.
-- **`new Promise((resolve, reject) => {...})`** pattern for async services (legacy; avoid adding new ones — prefer `async/await` for new code).
-- **`dotenv.config()`** is called in `index.js` and also in `db.config.js` and `security.interceptor.js` (redundant but harmless).
+- **`async/await`** for all async operations (no legacy `new Promise`).
+- **`dotenv.config()`** in `index.js`, `db.config.js`, and `security.interceptor.js` (needed because ESM imports resolve before `index.js` executes).
 - **No TypeScript** — plain JS.
-- **No tests** — add tests in `__tests__/` if introduced.
+- **Tests** in `test/` directory using Vitest. Run with `npm test`.
 
 ---
 
 ## Known Issues to Be Aware Of
 
-1. **sendMessage bug** in `telegram.service.js:59`: `body` is not `JSON.stringify()`'d.
-2. **Missing env var** `GEDUMA_AUTH_MONGODB_URI` not checked in `env-check.js`.
-3. **Commented-out auth** on `POST /auth/set-provider`: `security.verify` is commented.
-4. **Hardcoded `?id=12345`** in `geduma-auth.routes.js:12`.
-5. **Config Manager has `null` API key/secret** — `security.auth()` will always reject.
-6. **Double slash import** `'..//interceptors/...'` in `src/jobs/index.js:2`.
+1. **Commented-out auth** on `POST /auth/set-provider`: `security.verify` is commented.
+2. **Hardcoded `?id=12345`** in `geduma-auth.routes.js:12`.
+3. **Config Manager has `null` API key/secret** — `security.auth()` will always reject.
+4. **`tags` is stored as comma-separated String** in `snippets` model — not queryable by individual tag.
 
 ---
 
@@ -133,4 +131,5 @@ When modifying code:
 3. Use the existing connection from `db.config.js` for any new model.
 4. If adding a new module, follow the `routes + service + model` structure and register it in `main.router.js`.
 5. Import paths are relative (no path aliases).
-6. Run `npx standard --fix src/` after changes to stay lint-clean.
+6. Run `npm run lint` and `npm test` after changes to stay clean.
+7. When adding endpoints, document them in PRD.md and README.md.

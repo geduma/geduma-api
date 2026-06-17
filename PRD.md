@@ -1,8 +1,8 @@
 # PRD: Geduma API
 
-**Version:** 0.0.1  
+**Version:** 0.1.0  
 **Status:** Draft  
-**Last Updated:** 2026-06-15  
+**Last Updated:** 2026-06-17  
 
 ---
 
@@ -41,9 +41,12 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 | GET | `/config-manager/owner/:owner` | No | Filtered by owner |
 | GET | `/config-manager/schema/:owner/:schema` | No | Filtered by owner + schema |
 | GET | `/config-manager/name/:owner/:schema/:name` | No | Filtered by owner + schema + name |
+| POST | `/config-manager` | No | Create configuration (`{ owner, schema, name, value, expiration }`) |
+| PUT | `/config-manager/name/:owner/:schema/:name` | No | Update `value` and/or `expiration` |
+| DELETE | `/config-manager/name/:owner/:schema/:name` | No | Delete configuration |
 
 **Response format (all):** `{ ok, msg, data }` via `generalResponse`.
-**Empty sets** return HTTP 204 No Content.
+**Empty result sets** return HTTP 204 No Content. **POST** returns 201 Created. **Duplicate keys** return 409 Conflict.
 
 **Model:** `configurations`
 | Field | Type | Required | Notes |
@@ -53,7 +56,9 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 | name | String | Yes | Config key |
 | value | String | Yes | Config value |
 | expiration | Number | Yes | Timestamp |
-| key | Number | Yes | Numeric identifier |
+| key | Number | No | Auto-generated (unix timestamp) |
+
+**Indexes:** Unique compound index on `owner + schema + name`.
 
 **Database:** `CONFIG_MANAGER_MONGODB_URI` (dedicated MongoDB on Atlas)
 
@@ -105,7 +110,7 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 
 **Auth:** Both POST endpoints require JWT via `security.verify()` middleware.
 
-**Short code generation:** `Math.random().toString(36).substr(2, 6)` (6 chars, alphanumeric lowercase).
+**Short code generation:** `Math.random().toString(36).substring(2, 8)` (6 chars, alphanumeric lowercase).
 
 **Model:** `custom-urls`
 | Field | Type | Required | Notes |
@@ -128,8 +133,13 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 |--------|------|------|-------------|
 | GET | `/snippet-vault/` | No | Health check |
 | GET | `/snippet-vault/all` | No | Returns all snippets |
+| GET | `/snippet-vault/group/:group` | No | Filtered by group |
+| GET | `/snippet-vault/:id` | No | Get snippet by ID |
+| POST | `/snippet-vault` | No | Create snippet (`{ group, title, description, snippetValue, tags? }`) |
+| PUT | `/snippet-vault/:id` | No | Update snippet |
+| DELETE | `/snippet-vault/:id` | No | Delete snippet |
 
-**Planned but not yet exposed:** GitHub OAuth routes (`authGitHub` service is implemented but not routed).
+**Still planned but not yet exposed:** GitHub OAuth routes (`authGitHub` service is implemented but not routed).
 
 **Model:** `snippets`
 | Field | Type | Required | Notes |
@@ -139,6 +149,8 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 | description | String | Yes | Snippet description |
 | tags | String | No | Comma-separated tags |
 | snippetValue | String | Yes | The actual code/content |
+
+**Indexes:** Single index on `group`.
 
 **Database:** `SNIPPET_VAULT_MONGODB_URI` (dedicated MongoDB on Atlas)
 
@@ -244,7 +256,9 @@ Token lifecycle:
 
 - `morgan('dev')` — request logging
 - `express.json()` — JSON body parsing
-- `cors()` — cross-origin support
+- `cors()` — cross-origin support (configurable via `CORS_ORIGIN` env var)
+- `express-rate-limit` — 100 requests per 15 min window on all routes
+- `errorHandler` — centralized error handling middleware
 - `validateEnv()` — checks required env vars at startup (see `.env.example`)
 
 ---
@@ -294,33 +308,33 @@ See `.env.example` for full list. Required vars are validated by `src/env-check.
 - The `config-manager` module has `null` API key and secret — no auth protection for configurations.
 - JWT tokens are single-use (deleted from Redis on first `verify()` call).
 - Redis `flushdb` runs daily — all tokens are invalidated regardless of expiry.
-- No rate limiting is currently implemented.
-- No input sanitization or request validation is applied beyond Mongoose schema validation.
-- The `telegram.service.js` `sendMessage` has a bug: `body` is an object, not JSON-stringified (will fail).
+- Rate limiting is enabled globally (100 requests / 15 min via `express-rate-limit`).
+- Request input validation applied on POST/PUT endpoints.
+- Centralized Express error handler catches unhandled errors.
 
 ---
 
 ## 8. Known Issues & Technical Debt
 
-1. **sendMessage bug** (`telegram.service.js:59`): `body` is passed as a JS object instead of `JSON.stringify()` — the Telegram API will reject it.
-2. **Auth MongoDB URI not validated** (`env-check.js`): `GEDUMA_AUTH_MONGODB_URI` is missing from the required vars list.
+1. ~~**sendMessage bug** (`telegram.service.js`): Fixed — `JSON.stringify()` added, migrated to async/await.~~ ✅
+2. ~~**Auth MongoDB URI not validated** (`env-check.js`): Fixed — `GEDUMA_AUTH_MONGODB_URI` added.~~ ✅
 3. **Missing module in README:** Short URL, Geduma Auth, and Screenshot Backup endpoints are undocumented.
 4. **Hardcoded auth redirect** (`geduma-auth.routes.js:12`): `?id=12345` is a placeholder.
 5. **`security.verify` commented out** on `POST /auth/set-provider` — the route is unauthenticated despite the intent.
 6. **Config Manager has no auth** — `apiKeys['config-manager']` and `apiSecrets['config-manager']` are both `null`, meaning `security.auth()` will fail (key mismatch) for config-manager.
-7. **Imports path typo** in `src/jobs/index.js:2`: `'..//interceptors/...'` has a double slash (works due to path resolution but is inconsistent).
-8. **No tests** — no test framework or test files are present.
+7. ~~**Imports path typo** in `src/jobs/index.js:2`: Fixed — double slash corrected.~~ ✅
+8. ~~**No tests** — Fixed — Vitest + 23 tests across 6 test files.~~ ✅
 
 ---
 
 ## 9. Future Roadmap (Potential)
 
-- Add rate limiting (express-rate-limit or similar).
-- Add input validation middleware (Joi or Zod).
+- ~~**Rate limiting** — Implemented (express-rate-limit).~~ ✅
+- ~~**Input validation** — Implemented (Joi middleware + manual validation).~~ ✅
 - Expose GitHub OAuth routes for Snippet Vault login.
-- Add CRUD endpoints for Snippet Vault (create, update, delete).
+- ~~**CRUD endpoints for Snippet Vault** — Implemented.~~ ✅
+- ~~**CRUD endpoints for Config Manager** — Implemented (POST, PUT, DELETE).~~ ✅
 - Add URL analytics for Short URL (click tracking).
-- Add delete endpoints for Config Manager.
 - Add WebP-to-PNG conversion option for Screenshot Backup reports.
 - Migrate to TypeScript for type safety.
 - Add integration tests and CI pipeline.
