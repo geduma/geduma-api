@@ -8,20 +8,25 @@ export function screenshotBackupRouter (app) {
   const path = '/screenshot-backup'
 
   app.get(`${path}/`, (_, res) => {
-    res.send({ message: 'screenshot-backup-api' })
+    res.send(generalResponse.ok({ message: 'screenshot-backup-api' }))
   })
 
-  app.get(`${path}/summary/:schema`, security.verify, (req, res) => {
-    archiveService.getSummary({ schema: req.params.schema })
-      .then(data => {
-        if (data.length <= 0) res.status(204)
-        res.send(generateReport(data))
-      }).catch((err) => res.send(generalResponse.error(err)))
+  app.get(`${path}/summary/:schema`, security.verify, async (req, res) => {
+    try {
+      const data = await archiveService.getSummary({ schema: req.params.schema })
+      if (data.length <= 0) return res.status(204).end()
+      res.send(generateReport(data))
+    } catch (err) {
+      res.send(generalResponse.error(err.message))
+    }
   })
 
-  app.post(`${path}/geduma/webhook`, (req, res) => {
-    telegramService.webhook({ reqBody: req.body })
-      .then(data => res.send(generalResponse.ok(data)))
-      .catch((err) => res.send(generalResponse.error(err)))
+  app.post(`${path}/geduma/webhook`, async (req, res) => {
+    try {
+      const data = await telegramService.webhook({ reqBody: req.body })
+      res.send(generalResponse.ok(data))
+    } catch (err) {
+      res.send(generalResponse.error(err.message))
+    }
   })
 }

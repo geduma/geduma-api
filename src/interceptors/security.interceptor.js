@@ -25,25 +25,21 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN
 })
 
-const auth = ({ name, user, key, data = { user } }) => {
-  const jti = uuidv4()
-  return new Promise((resolve, reject) => {
-    if (key !== apiKeys[name]) reject(Error('invalid or missing api key'))
-    const token = jwt.sign({
-      data,
-      jti
-    }, apiSecrets[name], { expiresIn: '5m' })
+const auth = async ({ name, user, key, data = { user } }) => {
+  if (key !== apiKeys[name]) throw new Error('invalid or missing api key')
 
-    redis.set(jti, token)
-      .then(() => resolve({ token }))
-  })
+  const jti = uuidv4()
+  const token = jwt.sign({ data, jti }, apiSecrets[name], { expiresIn: '5m' })
+
+  await redis.set(jti, token)
+  return { token }
 }
 
 const verify = (req, res, next) => {
   const token = req.headers.authorization
   verifyJWT({
     token,
-    apiSecret: apiSecrets[req.url.split('/')[1]]
+    apiSecret: apiSecrets[req.path.split('/')[1]]
   }).then((valid) => {
     if (valid) {
       redis.del(jwt.decode(token.split(' ')[1]).jti)

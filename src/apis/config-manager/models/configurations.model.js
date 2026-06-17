@@ -4,19 +4,23 @@ import { conn } from '../../../db.config.js'
 const configurationsSchema = new mongoose.Schema({
   owner: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   schema: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   name: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   value: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   expiration: {
     type: Number,
@@ -24,8 +28,10 @@ const configurationsSchema = new mongoose.Schema({
   },
   key: {
     type: Number,
-    required: true
+    required: false
   }
-})
+}, { timestamps: true })
+
+configurationsSchema.index({ owner: 1, schema: 1, name: 1 }, { unique: true })
 
 export default conn.configManagerConn.model('configurations', configurationsSchema)

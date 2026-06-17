@@ -1,13 +1,13 @@
-import customUrlsShema from '../models/custom-urls.model.js'
+import customUrlsSchema from '../models/custom-urls.model.js'
 
 const getByShort = ({ id }) => {
-  return customUrlsShema.find({
+  return customUrlsSchema.find({
     shortUrl: id
   })
 }
 
 const saveUrl = ({ originUrl, shortUrl }) => {
-  return customUrlsShema.create({
+  return customUrlsSchema.create({
     originUrl,
     shortUrl,
     project: 'default'
@@ -15,7 +15,7 @@ const saveUrl = ({ originUrl, shortUrl }) => {
 }
 
 const saveUrlByProject = ({ originUrl, shortUrl, project }) => {
-  return customUrlsShema.create({
+  return customUrlsSchema.create({
     originUrl,
     shortUrl,
     project
