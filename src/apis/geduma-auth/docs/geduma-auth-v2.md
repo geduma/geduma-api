@@ -163,112 +163,45 @@ export const OAUTH_PROVIDERS = {
 
 ---
 
-## MongoDB Atlas — Setup (TablePlus)
+## MongoDB Atlas — Setup (Compass)
 
-Los siguientes scripts están listos para copiar y pegar en la consola de
-TablePlus (pestaña "Query") conectada a tu base de datos Atlas.
-
-### 1. Crear colecciones con validación
-
-```javascript
-db.createCollection('providers', {
-  validator: {
-    $jsonSchema: {
-      bsonType: 'object',
-      required: ['providerId', 'name', 'displayName', 'clientId', 'clientSecret'],
-      properties: {
-        providerId: { bsonType: 'string' },
-        name: { bsonType: 'string' },
-        displayName: { bsonType: 'string' },
-        clientId: { bsonType: 'string' },
-        clientSecret: { bsonType: 'string' },
-        icon: { bsonType: 'string' },
-        enabled: { bsonType: 'bool' }
-      }
-    }
-  }
-})
-```
+Abrir MongoDB Compass, conectar al cluster, seleccionar la base de datos
+`geduma-auth` y hacer clic en **"MongoSH"** (botón `>` en la barra inferior).
+Pegar todo el script de una sola vez:
 
 ```javascript
-db.createCollection('apps', {
-  validator: {
-    $jsonSchema: {
-      bsonType: 'object',
-      required: ['name', 'appId'],
-      properties: {
-        name: { bsonType: 'string' },
-        appId: { bsonType: 'string' },
-        enabled: { bsonType: 'bool' }
-      }
-    }
-  }
-})
-```
+// ============================================================
+// GEDUMA AUTH — Setup completo para MongoDB
+// Ejecutar en MongoSH (Compass) sobre la BD geduma-auth
+// ============================================================
 
-```javascript
-db.createCollection('app-providers', {
-  validator: {
-    $jsonSchema: {
-      bsonType: 'object',
-      required: ['appId', 'providerId'],
-      properties: {
-        appId: { bsonType: 'string' },
-        providerId: { bsonType: 'string' },
-        enabled: { bsonType: 'bool' }
-      }
-    }
-  }
-})
-```
+// --------------------------------------------------
+// 1. Crear colecciones
+// --------------------------------------------------
+db.createCollection('providers')
+db.createCollection('apps')
+db.createCollection('app-providers')
+db.createCollection('auth-sessions')
 
-```javascript
-db.createCollection('auth-sessions', {
-  validator: {
-    $jsonSchema: {
-      bsonType: 'object',
-      required: ['sessionToken', 'provider', 'email'],
-      properties: {
-        sessionToken: { bsonType: 'string' },
-        provider: { bsonType: 'string' },
-        appId: { bsonType: 'string' },
-        email: { bsonType: 'string' },
-        displayName: { bsonType: 'string' },
-        picture: { bsonType: 'string' },
-        rawData: { bsonType: 'object' },
-        expiresAt: { bsonType: 'date' }
-      }
-    }
-  }
-})
-```
-
-### 2. Crear índices
-
-```javascript
-// providers
+// --------------------------------------------------
+// 2. Índices
+// --------------------------------------------------
 db.providers.createIndex({ providerId: 1 }, { unique: true })
 db.providers.createIndex({ name: 1 }, { unique: true })
 
-// apps
 db.apps.createIndex({ appId: 1 }, { unique: true })
 
-// app-providers
 db['app-providers'].createIndex({ appId: 1, providerId: 1 }, { unique: true })
 db['app-providers'].createIndex({ appId: 1 })
 db['app-providers'].createIndex({ providerId: 1 })
 
-// auth-sessions
 db['auth-sessions'].createIndex({ sessionToken: 1 }, { unique: true })
 db['auth-sessions'].createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 })
-```
 
-### 3. Insertar proveedores
-
-Reemplaza los valores `clientId` y `clientSecret` con los reales de cada
-proveedor (Google Cloud Console, GitHub OAuth Apps, Microsoft Entra ID).
-
-```javascript
+// --------------------------------------------------
+// 3. Insertar proveedores
+//    Reemplazar clientId y clientSecret con valores reales
+// --------------------------------------------------
 db.providers.insertMany([
   {
     providerId: 'prov_google',
@@ -298,64 +231,50 @@ db.providers.insertMany([
     enabled: true
   }
 ])
-```
 
-### 4. Insertar apps
-
-```javascript
-// Función auxiliar para generar appId
-function generateAppId() {
+// --------------------------------------------------
+// 4. Insertar apps
+// --------------------------------------------------
+function generateAppId () {
   return 'app_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
 }
 
 db.apps.insertMany([
-  {
-    name: 'Mi App Web',
-    appId: generateAppId(),
-    enabled: true
-  },
-  {
-    name: 'Mi App Mobile',
-    appId: generateAppId(),
-    enabled: true
-  }
+  { name: 'Mi App Web', appId: generateAppId(), enabled: true },
+  { name: 'Mi App Mobile', appId: generateAppId(), enabled: true }
 ])
-```
 
-### 5. Relacionar apps con providers
-
-```javascript
+// --------------------------------------------------
+// 5. Relacionar apps con providers
+// --------------------------------------------------
 const apps = db.apps.find().toArray()
 const webApp = apps.find(a => a.name === 'Mi App Web')
 const mobileApp = apps.find(a => a.name === 'Mi App Mobile')
 
 db['app-providers'].insertMany([
-  // Mi App Web → Google + GitHub
-  { appId: webApp.appId, providerId: 'prov_google', enabled: true },
-  { appId: webApp.appId, providerId: 'prov_github', enabled: true },
-  // Mi App Mobile → Google + Microsoft
-  { appId: mobileApp.appId, providerId: 'prov_google', enabled: true },
+  { appId: webApp.appId, providerId: 'prov_google',  enabled: true },
+  { appId: webApp.appId, providerId: 'prov_github',  enabled: true },
+  { appId: mobileApp.appId, providerId: 'prov_google',  enabled: true },
   { appId: mobileApp.appId, providerId: 'prov_microsoft', enabled: true }
 ])
-```
 
-### 6. Verificar
+// --------------------------------------------------
+// 6. Verificar
+// --------------------------------------------------
+print('=== Providers ===')
+printjson(db.providers.find().toArray())
 
-```javascript
-// Ver proveedores
-db.providers.find().pretty()
+print('=== Apps ===')
+printjson(db.apps.find().toArray())
 
-// Ver apps
-db.apps.find().pretty()
+print('=== App-Providers ===')
+printjson(db['app-providers'].find().toArray())
 
-// Ver relaciones
-db['app-providers'].find().pretty()
-
-// Ver índices
-db.providers.getIndexes()
-db.apps.getIndexes()
-db['app-providers'].getIndexes()
-db['auth-sessions'].getIndexes()
+print('=== Índices ===')
+printjson(db.providers.getIndexes())
+printjson(db.apps.getIndexes())
+printjson(db['app-providers'].getIndexes())
+printjson(db['auth-sessions'].getIndexes())
 ```
 
 ### Notas importantes

@@ -63,12 +63,12 @@
       var sessionToken = '{{SESSION_TOKEN}}'
       var errorMsg = '{{ERROR}}'
 
-      if (errorMsg) {
+      if (errorMsg && errorMsg.indexOf('{{') !== 0) {
         document.getElementById('spinner').style.display = 'none'
         document.getElementById('status').textContent = 'Login failed'
         document.getElementById('error').style.display = 'block'
         document.getElementById('error').textContent = errorMsg
-      } else if (redirectUrl && sessionToken) {
+      } else if (redirectUrl && redirectUrl.indexOf('{{') !== 0 && sessionToken && sessionToken.indexOf('{{') !== 0) {
         setTimeout(function () {
           window.location.href = redirectUrl + '?session_token=' + sessionToken
         }, 600)

@@ -21,11 +21,13 @@ export function authRouter (app) {
         let html = getHtml()
         html = html.replace('{{REDIRECT_URL}}', result.redirectUrl)
         html = html.replace('{{SESSION_TOKEN}}', result.sessionToken)
+        html = html.replace('{{ERROR}}', '')
         res.send(html)
       } else {
         let html = getHtml()
         html = html.replace('{{REDIRECT_URL}}', '')
         html = html.replace('{{SESSION_TOKEN}}', '')
+        html = html.replace('{{ERROR}}', '')
         res.send(html)
       }
     } catch (error) {
