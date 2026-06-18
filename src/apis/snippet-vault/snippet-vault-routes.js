@@ -41,9 +41,9 @@ export function snippetVaultRouter (app) {
   app.post(`${path}`, async (req, res) => {
     try {
       if (!req.body) throw new Error('Request body is required')
-      const { group, title, description, tags, snippetValue } = req.body
-      if (!group || !title || !description || !snippetValue) throw new Error('group, title, description and snippetValue are required')
-      const data = await service.create({ group, title, description, tags, snippetValue })
+      const { group, title, description, tags, snippetValue, owner } = req.body
+      if (!group || !title || !description || !snippetValue || !owner) throw new Error('group, title, description, snippetValue and owner are required')
+      const data = await service.create({ group, title, description, tags, snippetValue, owner })
       res.status(201).send(generalResponse.ok(data))
     } catch (err) {
       res.status(400).send(generalResponse.error(err.message))
@@ -53,8 +53,8 @@ export function snippetVaultRouter (app) {
   app.put(`${path}/:id`, async (req, res) => {
     try {
       if (!req.body) throw new Error('Request body is required')
-      const { group, title, description, tags, snippetValue } = req.body
-      const data = await service.update({ id: req.params.id, group, title, description, tags, snippetValue })
+      const { group, title, description, tags, snippetValue, owner } = req.body
+      const data = await service.update({ id: req.params.id, group, title, description, tags, snippetValue, owner })
       if (!data) return res.status(404).send(generalResponse.error('Snippet not found'))
       res.send(generalResponse.ok(data))
     } catch (err) {

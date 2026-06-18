@@ -43,17 +43,18 @@ const getByGroup = ({ group }) => {
   return snippetsSchema.find({ group })
 }
 
-const create = ({ group, title, description, tags, snippetValue }) => {
-  return snippetsSchema.create({ group, title, description, tags, snippetValue })
+const create = ({ group, title, description, tags, snippetValue, owner }) => {
+  return snippetsSchema.create({ group, title, description, tags, snippetValue, owner })
 }
 
-const update = ({ id, group, title, description, tags, snippetValue }) => {
+const update = ({ id, group, title, description, tags, snippetValue, owner }) => {
   const updateFields = {}
   if (group !== undefined) updateFields.group = group
   if (title !== undefined) updateFields.title = title
   if (description !== undefined) updateFields.description = description
   if (tags !== undefined) updateFields.tags = tags
   if (snippetValue !== undefined) updateFields.snippetValue = snippetValue
+  if (owner !== undefined) updateFields.owner = owner
   return snippetsSchema.findByIdAndUpdate(id, { $set: updateFields }, { new: true, runValidators: true })
 }
 

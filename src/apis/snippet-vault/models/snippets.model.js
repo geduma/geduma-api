@@ -24,6 +24,11 @@ const snippetSchema = mongoose.Schema({
   snippetValue: {
     type: String,
     required: true
+  },
+  owner: {
+    type: String,
+    required: true,
+    trim: true
   }
 }, { timestamps: true })
 
