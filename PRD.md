@@ -135,8 +135,8 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 | GET | `/snippet-vault/all` | No | Returns all snippets |
 | GET | `/snippet-vault/group/:group` | No | Filtered by group |
 | GET | `/snippet-vault/:id` | No | Get snippet by ID |
-| POST | `/snippet-vault` | No | Create snippet (`{ group, title, description, snippetValue, tags? }`) |
-| PUT | `/snippet-vault/:id` | No | Update snippet |
+| POST | `/snippet-vault` | No | Create snippet (`{ group, title, description, snippetValue, owner, tags? }`) |
+| PUT | `/snippet-vault/:id` | No | Update snippet (supports `owner`) |
 | DELETE | `/snippet-vault/:id` | No | Delete snippet |
 
 **Still planned but not yet exposed:** GitHub OAuth routes (`authGitHub` service is implemented but not routed).
@@ -149,6 +149,7 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 | description | String | Yes | Snippet description |
 | tags | String | No | Comma-separated tags |
 | snippetValue | String | Yes | The actual code/content |
+| owner | String | Yes | User identifier (free-text, from body) |
 
 **Indexes:** Single index on `group`.
 

@@ -41,6 +41,6 @@ Empty result sets return HTTP 204.
 | GET | `/snippet-vault/all` | No | List all snippets |
 | GET | `/snippet-vault/group/:group` | No | Filter by group |
 | GET | `/snippet-vault/:id` | No | Get by ID |
-| POST | `/snippet-vault` | No | Create `{ group, title, description, snippetValue, tags? }` |
-| PUT | `/snippet-vault/:id` | No | Update snippet |
+| POST | `/snippet-vault` | No | Create `{ group, title, description, snippetValue, owner, tags? }` |
+| PUT | `/snippet-vault/:id` | No | Update snippet (supports `owner`) |
 | DELETE | `/snippet-vault/:id` | No | Delete snippet |
