@@ -13,6 +13,11 @@ const appsSchema = mongoose.Schema({
     unique: true,
     trim: true
   },
+  redirectUrl: {
+    type: String,
+    required: true,
+    trim: true
+  },
   enabled: {
     type: Boolean,
     default: true

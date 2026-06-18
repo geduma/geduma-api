@@ -21,7 +21,7 @@ en `src/constants/oauth-providers.js`.
   │  ← [{ name, displayName, icon, providerId }]               │
   │                           │                                │
   │  ② POST /auth/login/:appId/google                          │
-  │     { redirect_url: "https://miapp.com/cb" }               │
+  │     (sin body, redirectUrl de DB)                          │
   │     → Redis.set(oauth:state:{uuid},                        │
   │         {appId, redirectUrl, provider}, EX 300)             │
   │  ← { redirect: "https://accounts.google.com/o/oauth2/..." }│
@@ -74,6 +74,7 @@ Aplicaciones registradas que pueden usar geduma-auth para login.
 | `_id` | ObjectId | Autogenerado |
 | `name` | String | Nombre descriptivo de la app |
 | `appId` | String (unique) | Hash único que identifica la app |
+| `redirectUrl` | String | URL donde redirigir tras login (ej: `https://miapp.com/callback`) |
 | `enabled` | Boolean | Si la app está activa |
 | `createdAt` | Date | Timestamps automático |
 | `updatedAt` | Date | Timestamps automático |
@@ -119,7 +120,7 @@ automáticamente tras 15 min vía TTL index.
 |--------|------|------|------------|-----------|
 | `GET` | `/auth` | No | Query: `?code=&state=` | HTML (carátula) o procesa callback y redirige |
 | `GET` | `/auth/providers/:appId` | No | - | `{ ok, data: [{name, displayName, icon, providerId}] }` |
-| `POST` | `/auth/login/:appId/:provider` | No | `{ redirect_url }` | `{ ok, data: { redirect: "https://..." } }` |
+| `POST` | `/auth/login/:appId/:provider` | No | - | `{ ok, data: { redirect: "https://..." } }` |
 | `GET` | `/auth/session/:sessionToken` | No | - | `{ ok, data: { email, displayName, picture, provider, rawData } }` |
 
 Los endpoints existentes `GET /auth` (original), `POST /auth` y
@@ -240,8 +241,8 @@ function generateAppId () {
 }
 
 db.apps.insertMany([
-  { name: 'Mi App Web', appId: generateAppId(), enabled: true },
-  { name: 'Mi App Mobile', appId: generateAppId(), enabled: true }
+  { name: 'Mi App Web', appId: generateAppId(), redirectUrl: 'https://miapp.com/callback', enabled: true },
+  { name: 'Mi App Mobile', appId: generateAppId(), redirectUrl: 'https://mobile.miapp.com/callback', enabled: true }
 ])
 
 // --------------------------------------------------

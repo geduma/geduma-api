@@ -17,9 +17,11 @@ const redis = new Redis({
 
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000'
 
+const AUTH_FAILED = 'Authentication failed'
+
 const getProvidersForApp = async (appId) => {
   const app = await AppsModel.findOne({ appId, enabled: true })
-  if (!app) throw new Error('App not found or disabled')
+  if (!app) return []
 
   const appProviders = await AppProvidersModel.find({ appId, enabled: true })
   const providerIds = appProviders.map(ap => ap.providerId)
@@ -35,25 +37,25 @@ const getProvidersForApp = async (appId) => {
   }))
 }
 
-const initiateLogin = async ({ appId, provider, redirectUrl }) => {
+const initiateLogin = async ({ appId, provider }) => {
   const app = await AppsModel.findOne({ appId, enabled: true })
-  if (!app) throw new Error('App not found or disabled')
+  if (!app) throw new Error(AUTH_FAILED)
 
   const appProvider = await AppProvidersModel.findOne({ appId, providerId: provider, enabled: true })
-  if (!appProvider) throw new Error('Provider not enabled for this app')
+  if (!appProvider) throw new Error(AUTH_FAILED)
 
   const providerDoc = await ProvidersModel.findOne({ providerId: provider, enabled: true })
-  if (!providerDoc) throw new Error('Provider not found or disabled')
+  if (!providerDoc) throw new Error(AUTH_FAILED)
 
   const oauthConfig = OAUTH_PROVIDERS[providerDoc.name]
-  if (!oauthConfig) throw new Error('OAuth configuration not found for this provider')
+  if (!oauthConfig) throw new Error(AUTH_FAILED)
 
   const state = uuidv4()
   const redirectUri = `${API_BASE_URL}/auth`
 
   await redis.set(`oauth:state:${state}`, JSON.stringify({
     appId,
-    redirectUrl,
+    redirectUrl: app.redirectUrl,
     provider: providerDoc.name
   }), { ex: 300 })
 
@@ -84,10 +86,10 @@ const handleCallback = async ({ code, state }) => {
   const { appId, redirectUrl, provider } = stateData
 
   const providerDoc = await ProvidersModel.findOne({ name: provider, enabled: true })
-  if (!providerDoc) throw new Error('Provider not found')
+  if (!providerDoc) throw new Error(AUTH_FAILED)
 
   const oauthConfig = OAUTH_PROVIDERS[provider]
-  if (!oauthConfig) throw new Error('OAuth configuration not found')
+  if (!oauthConfig) throw new Error(AUTH_FAILED)
 
   const redirectUri = `${API_BASE_URL}/auth`
 

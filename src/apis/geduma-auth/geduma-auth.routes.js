@@ -55,9 +55,7 @@ export function authRouter (app) {
   app.post(`${p}/login/:appId/:provider`, async (req, res) => {
     try {
       const { appId, provider } = req.params
-      const { redirect_url: redirectUrl } = req.body
-      if (!redirectUrl) throw new Error('redirect_url is required')
-      const result = await service.initiateLogin({ appId, provider, redirectUrl })
+      const result = await service.initiateLogin({ appId, provider })
       res.send(generalResponse.ok(result))
     } catch (error) {
       res.status(400).send(generalResponse.error(error.message))
