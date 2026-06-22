@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Modular monolith backend API with 5 modules (Config Manager, Geduma Auth, Short URL, Snippet Vault, Screenshot Backup). Built with Express + Mongoose + JWT + Upstash Redis.
+Modular monolith backend API with 6 modules (Config Manager, Geduma Auth, Short URL, Snippet Vault, Screenshot Backup, Gnotes). Built with Express + Mongoose + JWT + Upstash Redis.
 
 ---
 
@@ -32,8 +32,8 @@ npm test                  # vitest run
 ```
 index.js                       # Entry: Express app, middleware, routes, cron
 src/
-├── main.router.js             # Aggregates all 5 module routers + health + 404
-├── db.config.js               # 5 Mongoose connections (conn.{authConn, configManagerConn, ...})
+├── main.router.js             # Aggregates all 6 module routers + health + 404
+├── db.config.js               # 6 Mongoose connections (conn.{authConn, configManagerConn, ...})
 ├── env-check.js               # Validates required env vars at startup
 ├── constants/
 │   ├── constants.js           # HTML templates, AUTH_PROVIDERS list
@@ -51,7 +51,8 @@ src/
     ├── config-manager/        # routes + service + model (configurations)
     ├── short-url/             # routes + service + model (custom-urls)
     ├── snippet-vault/         # routes + service + model (snippets)
-    └── screenshot-backup/     # routes + services/ + model (archives)
+    ├── screenshot-backup/     # routes + services/ + model (archives)
+    └── gnotes/                # routes + service + model (gnotes)
 ```
 
 ## Architecture Rules
@@ -83,7 +84,7 @@ Empty result sets return **204 No Content** via `res.status(204)` before `res.se
 
 ### Authentication layers
 - **No auth:** config-manager (all endpoints), health checks, snippet-vault (all endpoints), short-url GET, auth endpoints.
-- **JWT required:** short-url POST routes, screenshot-backup summary.
+- **JWT required:** short-url POST routes, screenshot-backup summary, gnotes (all endpoints).
 
 To add auth to a route:
 ```js
@@ -93,7 +94,7 @@ app.post(`${path}/something`, security.verify, handler)
 `security.verify` decodes JWT from `Authorization` header, checks Redis, deletes token (single-use), then calls `next()`.
 
 ### Database connections
-`db.config.js` creates 5 separate Mongoose connections. Each model imports its connection:
+`db.config.js` creates 6 separate Mongoose connections. Each model imports its connection:
 ```js
 import { conn } from '../../../db.config.js'
 export default conn.snippetVaultConn.model('snippets', schema)
