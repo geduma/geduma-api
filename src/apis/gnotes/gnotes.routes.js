@@ -8,7 +8,8 @@ export function gnotesRouter (app) {
   app.get(path, security.verify, async (req, res) => {
     try {
       const q = req.query.q
-      const data = q ? await service.search(q) : await service.getAll()
+      const owner = req.query.owner
+      const data = q ? await service.search(q, owner) : await service.getAll(owner)
       if (data.length <= 0) return res.status(204).end()
       res.send(generalResponse.ok(data))
     } catch (err) {
@@ -27,7 +28,7 @@ export function gnotesRouter (app) {
 
   app.put(`${path}/:slug`, security.verify, async (req, res) => {
     try {
-      const note = await service.update(req.params.slug, req.body)
+      const note = await service.update(req.params.slug, req.body, req.body.owner)
       res.send(generalResponse.ok({ success: true, slug: note.slug }))
     } catch (err) {
       res.status(err.statusCode || 500).send(generalResponse.error(err.message))
@@ -36,7 +37,8 @@ export function gnotesRouter (app) {
 
   app.delete(`${path}/:slug`, security.verify, async (req, res) => {
     try {
-      await service.remove(req.params.slug)
+      const owner = req.body.owner || req.query.owner
+      await service.remove(req.params.slug, owner)
       res.send(generalResponse.ok({ success: true }))
     } catch (err) {
       res.status(err.statusCode || 500).send(generalResponse.error(err.message))
