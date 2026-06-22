@@ -10,14 +10,16 @@ const apiKeys = {
   'config-manager': null,
   'snippet-vault': process.env.API_SNIPPET_VAULT_KEY,
   'short-url': process.env.API_SHORT_URL_KEY,
-  'screenshot-backup': process.env.API_SCREENSHOT_BACKUP_KEY
+  'screenshot-backup': process.env.API_SCREENSHOT_BACKUP_KEY,
+  'gnote': process.env.API_GNOTE_KEY
 }
 
 const apiSecrets = {
   'config-manager': null,
   'snippet-vault': process.env.API_SNIPPET_VAULT_TOKEN_SECRET,
   'short-url': process.env.API_SHORT_URL_TOKEN_SECRET,
-  'screenshot-backup': process.env.API_SCREENSHOT_BACKUP_TOKEN_SECRET
+  'screenshot-backup': process.env.API_SCREENSHOT_BACKUP_TOKEN_SECRET,
+  'gnote': process.env.API_GNOTE_TOKEN_SECRET
 }
 
 const redis = new Redis({
