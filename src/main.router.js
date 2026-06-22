@@ -4,6 +4,7 @@ import { configManagerRouter } from './apis/config-manager/config-manager.routes
 import { shortUrlRouter } from './apis/short-url/short-url.routes.js'
 import { snippetVaultRouter } from './apis/snippet-vault/snippet-vault-routes.js'
 import { screenshotBackupRouter } from './apis/screenshot-backup/screenshot-backup.routes.js'
+import { gnoteRouter } from './apis/gnote/gnote.routes.js'
 
 export function router (app) {
   authRouter(app)
@@ -11,6 +12,7 @@ export function router (app) {
   snippetVaultRouter(app)
   shortUrlRouter(app)
   screenshotBackupRouter(app)
+  gnoteRouter(app)
 
   app.get('/', (_, res) => {
     res.send(generalResponse.ok({ message: 'geduma-api' }))

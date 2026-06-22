@@ -44,3 +44,14 @@ Empty result sets return HTTP 204.
 | POST | `/snippet-vault` | No | Create `{ group, title, description, snippetValue, owner, tags? }` |
 | PUT | `/snippet-vault/:id` | No | Update snippet (supports `owner`) |
 | DELETE | `/snippet-vault/:id` | No | Delete snippet |
+
+---
+
+## Gnote
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/gnote` | JWT | List all notes (sorted by `updated` desc). Optional `?q=` for search |
+| POST | `/gnote` | JWT | Create note `{ slug, title, body?, tags?, updated }` |
+| PUT | `/gnote/:slug` | JWT | Update note (partial). Supports `newSlug` for rename |
+| DELETE | `/gnote/:slug` | JWT | Delete note (idempotent) |
