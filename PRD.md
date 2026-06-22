@@ -201,10 +201,10 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/gnotes` | JWT | Returns all notes sorted by `updated` desc. Supports `?q=` for server-side text search |
-| POST | `/gnotes` | JWT | Create note (`{ slug, title, body?, tags?, updated }`) |
-| PUT | `/gnotes/:slug` | JWT | Partial update. Accepts `newSlug` to rename the note's slug |
-| DELETE | `/gnotes/:slug` | JWT | Delete note (idempotent — returns 200 even if not found) |
+| GET | `/gnotes` | JWT | Returns notes sorted by `updated` desc. Supports `?owner=` to filter by owner |
+| POST | `/gnotes` | JWT | Create note (`{ slug, title, body?, tags?, updated, owner }`) |
+| PUT | `/gnotes/:slug` | JWT | Partial update. Requires `owner` in body for ownership validation. Accepts `newSlug` |
+| DELETE | `/gnotes/:slug` | JWT | Delete note. Requires `owner` (body or query) for ownership validation |
 
 **Auth:** All endpoints require JWT via `security.verify()` middleware.
 
@@ -214,12 +214,20 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 - `body`: optional, defaults to empty string.
 - `tags`: optional array of strings, defaults to `[]`.
 - `updated`: required, string in `YYYY-MM-DD` format.
+- `owner`: required, string (SHA-256 of email). Used for ownership validation on PUT/DELETE.
 - `newSlug` (on PUT): optional, triggers slug rename; must not conflict (409).
+
+**Ownership validation:**
+- `PUT /gnotes/:slug` and `DELETE /gnotes/:slug` require `owner` to be sent.
+- If `owner` is missing → `400` "Owner is required".
+- If `owner` does not match the stored note's `owner` → `403` "Forbidden: note owner mismatch".
 
 **Responses:**
 - `200` — success with `generalResponse.ok(data)`.
 - `201` — note created, returns `{ ok, msg, data: { success, slug } }`.
 - `204` — empty result set.
+- `400` — missing required `owner`.
+- `403` — owner mismatch on PUT/DELETE.
 - `404` — note not found.
 - `409` — slug already exists.
 
@@ -232,10 +240,12 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 | body | String | No | Markdown content (default `""`) |
 | tags | [String] | No | Array of tags (default `[]`) |
 | updated | String | Yes | Date in `YYYY-MM-DD` format |
+| owner | String | Yes | SHA-256 of user email, used for ownership |
 
 **Indexes:**
 - `{ slug: 1 }` unique — prevents duplicate slugs.
 - `{ updated: -1 }` — efficient sorting by date.
+- `{ owner: 1 }` — efficient filtering by owner.
 - `{ title: 'text', body: 'text', tags: 'text' }` — full-text search for `?q=`.
 
 **Database:** `GNOTES_MONGODB_URI` (dedicated MongoDB on Atlas)

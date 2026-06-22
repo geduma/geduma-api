@@ -25,6 +25,11 @@ const gnotesSchema = mongoose.Schema({
     type: String,
     required: true,
     trim: true
+  },
+  owner: {
+    type: String,
+    required: true,
+    trim: true
   }
 })
 
