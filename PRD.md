@@ -208,7 +208,7 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 
 **Auth:** All endpoints require JWT via `security.verify()` middleware.
 
-**CORS:** Restricted to `https://gnotes.geduma.com`.
+**CORS:** Restricted to `https://notes.geduma.com`.
 
 **Rate limiting:** 50 requests per 15-minute window on all `/gnotes` endpoints.
 

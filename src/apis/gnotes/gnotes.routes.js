@@ -7,7 +7,7 @@ import { security } from '../../interceptors/security.interceptor.js'
 export function gnotesRouter (app) {
   const path = '/gnotes'
 
-  app.use(path, cors({ origin: 'https://gnotes.geduma.com' }))
+  app.use(path, cors({ origin: 'https://notes.geduma.com' }))
 
   const gnotesLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
