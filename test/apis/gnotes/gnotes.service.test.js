@@ -6,7 +6,7 @@ const mockCreate = vi.fn()
 const mockDeleteOne = vi.fn()
 const mockSave = vi.fn()
 
-vi.mock('../../../src/apis/gnote/models/gnote.model.js', () => ({
+vi.mock('../../../src/apis/gnotes/models/gnotes.model.js', () => ({
   default: {
     find: (...args) => mockFind(...args),
     findOne: (...args) => mockFindOne(...args),
@@ -15,9 +15,9 @@ vi.mock('../../../src/apis/gnote/models/gnote.model.js', () => ({
   }
 }))
 
-const { service } = await import('../../../src/apis/gnote/services/gnote.service.js')
+const { service } = await import('../../../src/apis/gnotes/services/gnotes.service.js')
 
-describe('gnote.service', () => {
+describe('gnotes.service', () => {
   afterEach(() => {
     vi.clearAllMocks()
   })

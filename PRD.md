@@ -21,6 +21,7 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 - Enable URL shortening for sharing and redirection use cases.
 - Host a snippet vault for storing and retrieving reusable code blocks.
 - Provide a screenshot backup service via Telegram bot integration.
+- Offer a notes/markdown storage service with text search and tagging.
 - Maintain six isolated MongoDB databases (one per module) for data separation.
 - Keep the system simple to deploy: single process, no container orchestration required.
 
@@ -192,7 +193,7 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 
 ---
 
-### 3.6 Gnote
+### 3.6 Gnotes
 
 **Purpose:** Simple notes/markdown storage with text search, tagging, and slug-based CRUD operations. Ideal for personal notes, documentation snippets, or journal entries.
 
@@ -200,10 +201,10 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/gnote` | JWT | Returns all notes sorted by `updated` desc. Supports `?q=` for server-side text search |
-| POST | `/gnote` | JWT | Create note (`{ slug, title, body?, tags?, updated }`) |
-| PUT | `/gnote/:slug` | JWT | Partial update. Accepts `newSlug` to rename the note's slug |
-| DELETE | `/gnote/:slug` | JWT | Delete note (idempotent — returns 200 even if not found) |
+| GET | `/gnotes` | JWT | Returns all notes sorted by `updated` desc. Supports `?q=` for server-side text search |
+| POST | `/gnotes` | JWT | Create note (`{ slug, title, body?, tags?, updated }`) |
+| PUT | `/gnotes/:slug` | JWT | Partial update. Accepts `newSlug` to rename the note's slug |
+| DELETE | `/gnotes/:slug` | JWT | Delete note (idempotent — returns 200 even if not found) |
 
 **Auth:** All endpoints require JWT via `security.verify()` middleware.
 
@@ -237,7 +238,7 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 - `{ updated: -1 }` — efficient sorting by date.
 - `{ title: 'text', body: 'text', tags: 'text' }` — full-text search for `?q=`.
 
-**Database:** `GNOTE_MONGODB_URI` (dedicated MongoDB on Atlas)
+**Database:** `GNOTES_MONGODB_URI` (dedicated MongoDB on Atlas)
 
 ---
 
@@ -276,7 +277,7 @@ Client / Telegram
       ├── /short-url             → Short URL module
       ├── /snippet-vault         → Snippet Vault module
       ├── /screenshot-backup     → Screenshot Backup module
-      ├── /gnote                 → Gnote module
+      ├── /gnotes                → Gnotes module
       │
       ▼
   Security Interceptor (JWT + Redis validation)
@@ -334,7 +335,9 @@ See `.env.example` for full list. Required vars are validated by `src/env-check.
 | `CONFIG_MANAGER_MONGODB_URI` | Config Manager | Yes |
 | `SNIPPET_VAULT_MONGODB_URI` | Snippet Vault | Yes |
 | `SCREENSHOT_BACKUP_MONGODB_URI` | Screenshot Backup | Yes |
-| `GNOTE_MONGODB_URI` | Gnote | Yes |
+| `GNOTES_MONGODB_URI` | Gnotes | Yes |
+| `API_GNOTES_KEY` | Gnotes | Yes |
+| `API_GNOTES_TOKEN_SECRET` | Gnotes | Yes |
 | `UPSTASH_REDIS_REST_URL` | Security | Yes |
 | `UPSTASH_REDIS_REST_TOKEN` | Security | Yes |
 | `TELEGRAM_SCREENSHOT_BACKUP_BOT_TOKEN` | Screenshot Backup | Yes |

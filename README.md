@@ -47,11 +47,11 @@ Empty result sets return HTTP 204.
 
 ---
 
-## Gnote
+## Gnotes
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/gnote` | JWT | List all notes (sorted by `updated` desc). Optional `?q=` for search |
-| POST | `/gnote` | JWT | Create note `{ slug, title, body?, tags?, updated }` |
-| PUT | `/gnote/:slug` | JWT | Update note (partial). Supports `newSlug` for rename |
-| DELETE | `/gnote/:slug` | JWT | Delete note (idempotent) |
+| GET | `/gnotes` | JWT | List all notes (sorted by `updated` desc). Optional `?q=` for search |
+| POST | `/gnotes` | JWT | Create note `{ slug, title, body?, tags?, updated }` |
+| PUT | `/gnotes/:slug` | JWT | Update note (partial). Supports `newSlug` for rename |
+| DELETE | `/gnotes/:slug` | JWT | Delete note (idempotent) |

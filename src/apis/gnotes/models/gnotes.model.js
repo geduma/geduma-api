@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import { conn } from '../../../db.config.js'
 
-const gnoteSchema = mongoose.Schema({
+const gnotesSchema = mongoose.Schema({
   slug: {
     type: String,
     required: true,
@@ -28,4 +28,4 @@ const gnoteSchema = mongoose.Schema({
   }
 })
 
-export default conn.gnoteConn.model('gnotes', gnoteSchema)
+export default conn.gnotesConn.model('gnotes', gnotesSchema)

@@ -1,12 +1,12 @@
-import gnoteModel from '../models/gnote.model.js'
+import gnotesModel from '../models/gnotes.model.js'
 
 const getAll = () => {
-  return gnoteModel.find().sort({ updated: -1 })
+  return gnotesModel.find().sort({ updated: -1 })
 }
 
 const search = (q) => {
   const regex = new RegExp(q, 'i')
-  return gnoteModel.find({
+  return gnotesModel.find({
     $or: [
       { title: regex },
       { body: regex },
@@ -16,17 +16,17 @@ const search = (q) => {
 }
 
 const create = async (data) => {
-  const exists = await gnoteModel.findOne({ slug: data.slug })
+  const exists = await gnotesModel.findOne({ slug: data.slug })
   if (exists) {
     const err = new Error('Slug already exists')
     err.statusCode = 409
     throw err
   }
-  return gnoteModel.create(data)
+  return gnotesModel.create(data)
 }
 
 const update = async (slug, data) => {
-  const note = await gnoteModel.findOne({ slug })
+  const note = await gnotesModel.findOne({ slug })
   if (!note) {
     const err = new Error('Note not found')
     err.statusCode = 404
@@ -34,7 +34,7 @@ const update = async (slug, data) => {
   }
 
   if (data.newSlug && data.newSlug !== slug) {
-    const conflict = await gnoteModel.findOne({ slug: data.newSlug })
+    const conflict = await gnotesModel.findOne({ slug: data.newSlug })
     if (conflict) {
       const err = new Error('New slug already exists')
       err.statusCode = 409
@@ -52,7 +52,7 @@ const update = async (slug, data) => {
 }
 
 const remove = async (slug) => {
-  await gnoteModel.deleteOne({ slug })
+  await gnotesModel.deleteOne({ slug })
   return { success: true }
 }
 

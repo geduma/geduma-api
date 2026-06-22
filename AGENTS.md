@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Modular monolith backend API with 6 modules (Config Manager, Geduma Auth, Short URL, Snippet Vault, Screenshot Backup, Gnote). Built with Express + Mongoose + JWT + Upstash Redis.
+Modular monolith backend API with 6 modules (Config Manager, Geduma Auth, Short URL, Snippet Vault, Screenshot Backup, Gnotes). Built with Express + Mongoose + JWT + Upstash Redis.
 
 ---
 
@@ -52,7 +52,7 @@ src/
     ├── short-url/             # routes + service + model (custom-urls)
     ├── snippet-vault/         # routes + service + model (snippets)
     ├── screenshot-backup/     # routes + services/ + model (archives)
-    └── gnote/                 # routes + service + model (gnotes)
+    └── gnotes/                # routes + service + model (gnotes)
 ```
 
 ## Architecture Rules
@@ -84,7 +84,7 @@ Empty result sets return **204 No Content** via `res.status(204)` before `res.se
 
 ### Authentication layers
 - **No auth:** config-manager (all endpoints), health checks, snippet-vault (all endpoints), short-url GET, auth endpoints.
-- **JWT required:** short-url POST routes, screenshot-backup summary, gnote (all endpoints).
+- **JWT required:** short-url POST routes, screenshot-backup summary, gnotes (all endpoints).
 
 To add auth to a route:
 ```js
