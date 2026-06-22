@@ -1,9 +1,9 @@
 import { generalResponse } from '../../utils/generalResponse.js'
-import { service } from './services/gnote.service.js'
+import { service } from './services/gnotes.service.js'
 import { security } from '../../interceptors/security.interceptor.js'
 
-export function gnoteRouter (app) {
-  const path = '/gnote'
+export function gnotesRouter (app) {
+  const path = '/gnotes'
 
   app.get(path, security.verify, async (req, res) => {
     try {
