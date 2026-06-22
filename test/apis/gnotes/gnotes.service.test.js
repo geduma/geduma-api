@@ -23,18 +23,9 @@ describe('gnotes.service', () => {
   })
 
   describe('getAll', () => {
-    it('should return all notes when no owner filter', async () => {
-      const expected = [
-        { slug: 'b', updated: '2026-06-22', owner: 'hash1' },
-        { slug: 'a', updated: '2026-06-21', owner: 'hash2' }
-      ]
-      mockFind.mockReturnValue({
-        sort: vi.fn().mockResolvedValue(expected)
-      })
-
-      const result = await service.getAll()
-      expect(result).toEqual(expected)
-      expect(mockFind).toHaveBeenCalledWith({})
+    it('should throw 400 when owner is not provided', () => {
+      expect(() => service.getAll())
+        .toThrow('Owner query param is required')
     })
 
     it('should filter by owner when owner is provided', async () => {
@@ -47,24 +38,21 @@ describe('gnotes.service', () => {
       expect(result).toEqual(expected)
       expect(mockFind).toHaveBeenCalledWith({ owner: 'hash1' })
     })
+
+    it('should return empty array when owner has no notes', async () => {
+      mockFind.mockReturnValue({
+        sort: vi.fn().mockResolvedValue([])
+      })
+
+      const result = await service.getAll('empty-hash')
+      expect(result).toHaveLength(0)
+    })
   })
 
   describe('search', () => {
-    it('should search across title, body and tags', async () => {
-      const expected = [{ slug: 'test', title: 'Test Note', owner: 'hash1' }]
-      mockFind.mockReturnValue({
-        sort: vi.fn().mockResolvedValue(expected)
-      })
-
-      const result = await service.search('test')
-      expect(result).toEqual(expected)
-      expect(mockFind).toHaveBeenCalledWith({
-        $or: [
-          { title: /test/i },
-          { body: /test/i },
-          { tags: /test/i }
-        ]
-      })
+    it('should throw 400 when owner is not provided', () => {
+      expect(() => service.search('test'))
+        .toThrow('Owner query param is required')
     })
 
     it('should filter by owner when owner is provided', async () => {
@@ -90,7 +78,7 @@ describe('gnotes.service', () => {
         sort: vi.fn().mockResolvedValue([])
       })
 
-      const result = await service.search('nonexistent')
+      const result = await service.search('nonexistent', 'hash1')
       expect(result).toHaveLength(0)
     })
   })

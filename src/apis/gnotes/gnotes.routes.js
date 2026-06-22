@@ -1,9 +1,22 @@
+import cors from 'cors'
+import rateLimit from 'express-rate-limit'
 import { generalResponse } from '../../utils/generalResponse.js'
 import { service } from './services/gnotes.service.js'
 import { security } from '../../interceptors/security.interceptor.js'
 
 export function gnotesRouter (app) {
   const path = '/gnotes'
+
+  app.use(path, cors({ origin: 'https://gnotes.geduma.com' }))
+
+  const gnotesLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 50,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { ok: false, msg: 'Too many requests, please try again later', data: [] }
+  })
+  app.use(path, gnotesLimiter)
 
   app.get(path, security.verify, async (req, res) => {
     try {

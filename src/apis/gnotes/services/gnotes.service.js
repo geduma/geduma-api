@@ -1,21 +1,29 @@
 import gnotesModel from '../models/gnotes.model.js'
 
+const requireOwner = (owner) => {
+  if (!owner) {
+    const err = new Error('Owner query param is required')
+    err.statusCode = 400
+    throw err
+  }
+}
+
 const getAll = (owner) => {
-  const filter = owner ? { owner } : {}
-  return gnotesModel.find(filter).sort({ updated: -1 })
+  requireOwner(owner)
+  return gnotesModel.find({ owner }).sort({ updated: -1 })
 }
 
 const search = (q, owner) => {
+  requireOwner(owner)
   const regex = new RegExp(q, 'i')
-  const filter = {
+  return gnotesModel.find({
     $or: [
       { title: regex },
       { body: regex },
       { tags: regex }
-    ]
-  }
-  if (owner) filter.owner = owner
-  return gnotesModel.find(filter).sort({ updated: -1 })
+    ],
+    owner
+  }).sort({ updated: -1 })
 }
 
 const create = async (data) => {
