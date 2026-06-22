@@ -46,12 +46,3 @@ Empty result sets return HTTP 204.
 | DELETE | `/snippet-vault/:id` | No | Delete snippet |
 
 ---
-
-## Gnotes
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| GET | `/gnotes` | JWT | List notes. Optional `?owner=` to filter by owner |
-| POST | `/gnotes` | JWT | Create note `{ slug, title, body?, tags?, updated, owner }` |
-| PUT | `/gnotes/:slug` | JWT | Update note (partial). Requires `owner` in body for validation. Supports `newSlug` for rename |
-| DELETE | `/gnotes/:slug` | JWT | Delete note. Requires `owner` (body or query) for validation |
