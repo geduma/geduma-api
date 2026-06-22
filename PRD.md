@@ -208,17 +208,22 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 
 **Auth:** All endpoints require JWT via `security.verify()` middleware.
 
+**CORS:** Restricted to `https://gnotes.geduma.com`.
+
+**Rate limiting:** 50 requests per 15-minute window on all `/gnotes` endpoints.
+
 **Validation:**
 - `slug`: required, unique, must not conflict with existing notes (409).
 - `title`: required.
 - `body`: optional, defaults to empty string.
 - `tags`: optional array of strings, defaults to `[]`.
 - `updated`: required, string in `YYYY-MM-DD` format.
-- `owner`: required, string (SHA-256 of email). Used for ownership validation on PUT/DELETE.
+- `owner`: required, string (SHA-256 of email). Required on all endpoints including GET.
 - `newSlug` (on PUT): optional, triggers slug rename; must not conflict (409).
 
 **Ownership validation:**
-- `PUT /gnotes/:slug` and `DELETE /gnotes/:slug` require `owner` to be sent.
+- `GET /gnotes` requires `?owner=` query param. Missing → `400` "Owner query param is required".
+- `PUT /gnotes/:slug` and `DELETE /gnotes/:slug` require `owner` in body.
 - If `owner` is missing → `400` "Owner is required".
 - If `owner` does not match the stored note's `owner` → `403` "Forbidden: note owner mismatch".
 
