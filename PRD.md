@@ -257,6 +257,70 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 
 ---
 
+### 3.7 Gpass
+
+**Purpose:** Blind-storage password manager. The server stores and returns `password`, `encrypted`, and `iv` without inspection — all encryption/decryption is client-side. The `strength` and `compromised` fields are stored in plain text and inspected for the `security` filter.
+
+**Base path:** `/gpass`
+
+**Endpoints:**
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/gpass` | JWT | List entries. `?owner` (req), `?q` (opc, searches `title`), `?security` (opc, filters weak/compromised) |
+| GET | `/gpass/:id` | JWT | Get single entry by MongoDB `_id`. `?owner` (req) |
+| POST | `/gpass` | JWT | Create entry (`{ title, username?, password, strength, encrypted, iv, owner, compromised? }`) |
+| PUT | `/gpass/:id` | JWT | Partial update. Requires `owner` in body for ownership validation |
+| DELETE | `/gpass/:id` | JWT | Delete entry. Requires `owner` (body or query) for ownership validation |
+
+**Auth:** All endpoints require JWT via `security.verify()` middleware.
+
+**CORS:** Restricted to `https://gpass.geduma.com`.
+
+**Rate limiting:** 50 requests per 15-minute window on all `/gpass` endpoints.
+
+**Filter: `?security=true`** — returns only entries where `strength === "weak"` **or** `compromised === true`.
+
+**Blind storage:** `password`, `encrypted`, and `iv` are stored and returned as-is. The server never reads or validates their contents.
+
+**Ownership validation:**
+- `GET /gpass` requires `?owner=` query param. Missing → `400` "Owner query param is required".
+- `PUT /gpass/:id` and `DELETE /gpass/:id` require `owner` in body or query.
+- If `owner` does not match the stored entry's `owner` → `403` "Forbidden: owner mismatch".
+
+**Responses:**
+- `200` — success with `generalResponse.ok(data)`.
+- `201` — entry created, returns `{ ok, msg, data: { success, id } }`.
+- `204` — empty result set.
+- `400` — missing required `owner`.
+- `403` — owner mismatch on PUT/DELETE.
+- `404` — entry not found.
+- `401` — invalid or missing JWT.
+
+**Model:** `gpass`
+
+| Field | Type | Required | Default | Notes |
+|-------|------|----------|---------|-------|
+| `title` | String | Yes | — | Searchable by `?q` |
+| `username` | String | No | — | |
+| `password` | String | Yes | — | Blind storage |
+| `strength` | String (enum) | Yes | — | `"strong"`, `"weak"`, `"compromised"` |
+| `encrypted` | String | Yes | — | Blind storage |
+| `iv` | String | Yes | — | Blind storage |
+| `owner` | String | Yes | — | Owner identifier |
+| `compromised` | Boolean | No | `false` | Plain-text flag for security filter |
+| `createdAt` / `updatedAt` | Date | auto | auto | Mongoose timestamps |
+
+**Indexes:**
+- `{ owner: 1, title: 1 }` — efficient owner + search queries.
+- `{ owner: 1, updatedAt: -1 }` — sort by most recent.
+- `{ owner: 1, strength: 1 }` — security filter optimization.
+- `{ owner: 1, compromised: 1 }` — security filter optimization.
+
+**Database:** `GPASS_MONGODB_URI` (dedicated MongoDB on Atlas)
+
+---
+
 ## 4. Technical Architecture
 
 ### 4.1 Stack
@@ -265,7 +329,7 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 |-------|-----------|
 | Runtime | Node.js (ES Modules) |
 | Framework | Express 4.21 |
-| Databases | MongoDB Atlas (×6, via Mongoose 7) |
+| Databases | MongoDB Atlas (×7, via Mongoose 7) |
 | Cache / Token Store | Upstash Redis (Serverless) |
 | Auth | JWT (jsonwebtoken) |
 | Image Processing | Sharp (WebP compression) |
@@ -293,12 +357,13 @@ Client / Telegram
       ├── /snippet-vault         → Snippet Vault module
       ├── /screenshot-backup     → Screenshot Backup module
       ├── /gnotes                → Gnotes module
+      ├── /gpass                 → Gpass module
       │
       ▼
   Security Interceptor (JWT + Redis validation)
       │
       ▼
-  Mongoose ──→ 6 MongoDB Atlas databases
+  Mongoose ──→ 7 MongoDB Atlas databases
   Upstash ───→ Redis (token storage)
 ```
 
@@ -353,6 +418,9 @@ See `.env.example` for full list. Required vars are validated by `src/env-check.
 | `GNOTES_MONGODB_URI` | Gnotes | Yes |
 | `API_GNOTES_KEY` | Gnotes | Yes |
 | `API_GNOTES_TOKEN_SECRET` | Gnotes | Yes |
+| `API_GPASS_KEY` | Gpass | Yes |
+| `API_GPASS_TOKEN_SECRET` | Gpass | Yes |
+| `GPASS_MONGODB_URI` | Gpass | Yes |
 | `UPSTASH_REDIS_REST_URL` | Security | Yes |
 | `UPSTASH_REDIS_REST_TOKEN` | Security | Yes |
 | `TELEGRAM_SCREENSHOT_BACKUP_BOT_TOKEN` | Screenshot Backup | Yes |
@@ -364,7 +432,7 @@ See `.env.example` for full list. Required vars are validated by `src/env-check.
 ## 6. Infrastructure
 
 - **Hosting:** Single Node.js process.
-- **Databases:** 6 MongoDB Atlas clusters/DBs (one per module).
+- **Databases:** 7 MongoDB Atlas clusters/DBs (one per module).
 - **Cache:** Upstash Redis (REST-based, serverless).
 - **Auth Frontend:** `https://auth.geduma.com` (external, not part of this API).
 - **Telegram:** Bot webhook receives photos; uses Telegram File API for download.
@@ -393,7 +461,7 @@ See `.env.example` for full list. Required vars are validated by `src/env-check.
 5. **`security.verify` commented out** on `POST /auth/set-provider` — the route is unauthenticated despite the intent.
 6. **Config Manager has no auth** — `apiKeys['config-manager']` and `apiSecrets['config-manager']` are both `null`, meaning `security.auth()` will fail (key mismatch) for config-manager.
 7. ~~**Imports path typo** in `src/jobs/index.js:2`: Fixed — double slash corrected.~~ ✅
-8. ~~**No tests** — Fixed — Vitest + 23 tests across 6 test files.~~ ✅
+8. ~~**No tests** — Fixed — Vitest + tests across 7 test files.~~ ✅
 
 ---
 
