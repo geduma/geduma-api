@@ -122,7 +122,7 @@ export default conn.snippetVaultConn.model('snippets', schema)
 2. **Hardcoded `?id=12345`** in `geduma-auth.routes.js:12`.
 3. **Config Manager has `null` API key/secret** — `security.auth()` will always reject.
 4. **`tags` is stored as comma-separated String** in `snippets` model — not queryable by individual tag.
-5. **Gpass blind storage** — `password`, `encrypted`, `iv` are never inspected by the server; `strength` and `compromised` are inspected for the `security=true` filter.
+5. **Gpass blind storage** — `password`, `encrypted`, `iv` are never inspected by the server.
 
 ---
 

@@ -31,7 +31,7 @@ describe('gpass.service', () => {
         .toThrow('Owner query param is required')
     })
 
-    it('should filter by owner when no q or security', async () => {
+    it('should filter by owner when no q', async () => {
       const expected = [{ title: 'My Pass', owner: 'hash1' }]
       mockFind.mockReturnValue({
         sort: vi.fn().mockResolvedValue(expected)
@@ -53,37 +53,6 @@ describe('gpass.service', () => {
       expect(mockFind).toHaveBeenCalledWith({
         owner: 'hash1',
         title: { $regex: 'test', $options: 'i' }
-      })
-    })
-
-    it('should filter weak/compromised when security=true', async () => {
-      mockFind.mockReturnValue({
-        sort: vi.fn().mockResolvedValue([])
-      })
-
-      await service.getAll('hash1', undefined, 'true')
-      expect(mockFind).toHaveBeenCalledWith({
-        owner: 'hash1',
-        $or: [
-          { strength: 'weak' },
-          { compromised: true }
-        ]
-      })
-    })
-
-    it('should combine q and security filter', async () => {
-      mockFind.mockReturnValue({
-        sort: vi.fn().mockResolvedValue([])
-      })
-
-      await service.getAll('hash1', 'test', 'true')
-      expect(mockFind).toHaveBeenCalledWith({
-        owner: 'hash1',
-        title: { $regex: 'test', $options: 'i' },
-        $or: [
-          { strength: 'weak' },
-          { compromised: true }
-        ]
       })
     })
 
@@ -149,8 +118,7 @@ describe('gpass.service', () => {
         strength: 'weak',
         encrypted: 'old-encrypted',
         iv: 'old-iv',
-        owner: 'hash1',
-        compromised: false
+        owner: 'hash1'
       }
       mockFindById.mockResolvedValue(existing)
       mockFindByIdAndUpdate.mockResolvedValue({

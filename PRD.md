@@ -259,7 +259,7 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 
 ### 3.7 Gpass
 
-**Purpose:** Blind-storage password manager. The server stores and returns `password`, `encrypted`, and `iv` without inspection — all encryption/decryption is client-side. The `strength` and `compromised` fields are stored in plain text and inspected for the `security` filter.
+**Purpose:** Blind-storage password manager. The server stores and returns `password`, `encrypted`, and `iv` without inspection — all encryption/decryption is client-side. The `strength` field is stored in plain text for display purposes.
 
 **Base path:** `/gpass`
 
@@ -267,9 +267,9 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/gpass` | JWT | List entries. `?owner` (req), `?q` (opc, searches `title`), `?security` (opc, filters weak/compromised) |
+| GET | `/gpass` | JWT | List entries. `?owner` (req), `?q` (opc, searches `title`) |
 | GET | `/gpass/:id` | JWT | Get single entry by MongoDB `_id`. `?owner` (req) |
-| POST | `/gpass` | JWT | Create entry (`{ title, username?, password, strength, encrypted, iv, owner, compromised? }`) |
+| POST | `/gpass` | JWT | Create entry (`{ title, username?, password, strength, encrypted, iv, owner }`) |
 | PUT | `/gpass/:id` | JWT | Partial update. Requires `owner` in body for ownership validation |
 | DELETE | `/gpass/:id` | JWT | Delete entry. Requires `owner` (body or query) for ownership validation |
 
@@ -278,8 +278,6 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 **CORS:** Restricted to `https://gpass.geduma.com`.
 
 **Rate limiting:** 50 requests per 15-minute window on all `/gpass` endpoints.
-
-**Filter: `?security=true`** — returns only entries where `strength === "weak"` **or** `compromised === true`.
 
 **Blind storage:** `password`, `encrypted`, and `iv` are stored and returned as-is. The server never reads or validates their contents.
 
@@ -304,18 +302,15 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 | `title` | String | Yes | — | Searchable by `?q` |
 | `username` | String | No | — | |
 | `password` | String | Yes | — | Blind storage |
-| `strength` | String (enum) | Yes | — | `"strong"`, `"weak"`, `"compromised"` |
+| `strength` | String (enum) | Yes | — | `"strong"`, `"medium"`, `"weak"` |
 | `encrypted` | String | Yes | — | Blind storage |
 | `iv` | String | Yes | — | Blind storage |
 | `owner` | String | Yes | — | Owner identifier |
-| `compromised` | Boolean | No | `false` | Plain-text flag for security filter |
 | `createdAt` / `updatedAt` | Date | auto | auto | Mongoose timestamps |
 
 **Indexes:**
 - `{ owner: 1, title: 1 }` — efficient owner + search queries.
 - `{ owner: 1, updatedAt: -1 }` — sort by most recent.
-- `{ owner: 1, strength: 1 }` — security filter optimization.
-- `{ owner: 1, compromised: 1 }` — security filter optimization.
 
 **Database:** `GPASS_MONGODB_URI` (dedicated MongoDB on Atlas)
 

@@ -22,8 +22,7 @@ export function gpassRouter (app) {
     try {
       const owner = req.query.owner
       const q = req.query.q
-      const securityFlag = req.query.security
-      const data = await service.getAll(owner, q, securityFlag)
+      const data = await service.getAll(owner, q)
       if (data.length <= 0) return res.status(204).end()
       res.send(generalResponse.ok(data))
     } catch (err) {
