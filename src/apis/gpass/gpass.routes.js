@@ -7,7 +7,7 @@ import { security } from '../../interceptors/security.interceptor.js'
 export function gpassRouter (app) {
   const path = '/gpass'
 
-  app.use(path, cors({ origin: 'https://gpass.geduma.com' }))
+  app.use(path, cors({ origin: 'https://pass.geduma.com' }))
 
   const gpassLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,

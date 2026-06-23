@@ -275,7 +275,7 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 
 **Auth:** All endpoints require JWT via `security.verify()` middleware.
 
-**CORS:** Restricted to `https://gpass.geduma.com`.
+**CORS:** Restricted to `https://pass.geduma.com`.
 
 **Rate limiting:** 50 requests per 15-minute window on all `/gpass` endpoints.
 
