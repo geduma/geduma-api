@@ -126,7 +126,7 @@ La app no redirige HTTP → HTTPS. Depende del reverse proxy.
 | Aspecto | Estado |
 |---------|--------|
 | **Autenticación JWT single-use** | ✅ Token se elimina de Redis tras uso |
-| **CORS restringido** | ✅ Solo `https://gpass.geduma.com` |
+| **CORS restringido** | ✅ Solo `https://pass.geduma.com` |
 | **Rate limiting** | ✅ 50 req/15min en el path |
 | **Ownership en PUT/DELETE** | ✅ Verifica `doc.owner === owner` antes de mutar |
 | **Allowlist de campos en update** | ✅ Solo `allowed` se actualizan |
