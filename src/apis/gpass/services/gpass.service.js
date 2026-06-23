@@ -13,7 +13,11 @@ const getAll = (owner, q) => {
   const filter = { owner }
 
   if (q) {
-    filter.title = { $regex: q, $options: 'i' }
+    filter.$or = [
+      { title: { $regex: q, $options: 'i' } },
+      { username: { $regex: q, $options: 'i' } },
+      { tags: { $regex: q, $options: 'i' } }
+    ]
   }
 
   return gpassModel.find(filter).sort({ updatedAt: -1 })
@@ -51,7 +55,7 @@ const update = async (id, data, owner) => {
 
   verifyOwnership(doc, owner)
 
-  const allowed = ['title', 'username', 'password', 'strength', 'encrypted', 'iv']
+  const allowed = ['title', 'username', 'password', 'strength', 'encrypted', 'iv', 'tags']
   const updates = {}
   for (const field of allowed) {
     if (data[field] !== undefined) {

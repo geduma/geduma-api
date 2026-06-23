@@ -42,7 +42,7 @@ describe('gpass.service', () => {
       expect(mockFind).toHaveBeenCalledWith({ owner: 'hash1' })
     })
 
-    it('should search by title when q is provided', async () => {
+    it('should search by title, username, or tags when q is provided', async () => {
       const expected = [{ title: 'test entry', owner: 'hash1' }]
       mockFind.mockReturnValue({
         sort: vi.fn().mockResolvedValue(expected)
@@ -52,7 +52,11 @@ describe('gpass.service', () => {
       expect(result).toEqual(expected)
       expect(mockFind).toHaveBeenCalledWith({
         owner: 'hash1',
-        title: { $regex: 'test', $options: 'i' }
+        $or: [
+          { title: { $regex: 'test', $options: 'i' } },
+          { username: { $regex: 'test', $options: 'i' } },
+          { tags: { $regex: 'test', $options: 'i' } }
+        ]
       })
     })
 
