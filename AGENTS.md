@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Modular monolith backend API with 6 modules (Config Manager, Geduma Auth, Short URL, Snippet Vault, Screenshot Backup, Gnotes). Built with Express + Mongoose + JWT + Upstash Redis.
+Modular monolith backend API with 7 modules (Config Manager, Geduma Auth, Short URL, Snippet Vault, Screenshot Backup, Gnotes, Gpass). Built with Express + Mongoose + JWT + Upstash Redis.
 
 ---
 
@@ -32,8 +32,8 @@ npm test                  # vitest run
 ```
 index.js                       # Entry: Express app, middleware, routes, cron
 src/
-├── main.router.js             # Aggregates all 6 module routers + health + 404
-├── db.config.js               # 6 Mongoose connections (conn.{authConn, configManagerConn, ...})
+├── main.router.js             # Aggregates all 7 module routers + health + 404
+├── db.config.js               # 7 Mongoose connections (conn.{authConn, configManagerConn, ...})
 ├── env-check.js               # Validates required env vars at startup
 ├── constants/
 │   ├── constants.js           # HTML templates, AUTH_PROVIDERS list
@@ -52,7 +52,8 @@ src/
     ├── short-url/             # routes + service + model (custom-urls)
     ├── snippet-vault/         # routes + service + model (snippets)
     ├── screenshot-backup/     # routes + services/ + model (archives)
-    └── gnotes/                # routes + service + model (gnotes)
+    ├── gnotes/                # routes + service + model (gnotes)
+    └── gpass/                 # routes + service + model (passwords, blind storage)
 ```
 
 ## Architecture Rules
@@ -84,7 +85,7 @@ Empty result sets return **204 No Content** via `res.status(204)` before `res.se
 
 ### Authentication layers
 - **No auth:** config-manager (all endpoints), health checks, snippet-vault (all endpoints), short-url GET, auth endpoints.
-- **JWT required:** short-url POST routes, screenshot-backup summary, gnotes (all endpoints).
+- **JWT required:** short-url POST routes, screenshot-backup summary, gnotes (all endpoints), gpass (all endpoints).
 
 To add auth to a route:
 ```js
@@ -94,7 +95,7 @@ app.post(`${path}/something`, security.verify, handler)
 `security.verify` decodes JWT from `Authorization` header, checks Redis, deletes token (single-use), then calls `next()`.
 
 ### Database connections
-`db.config.js` creates 6 separate Mongoose connections. Each model imports its connection:
+`db.config.js` creates 7 separate Mongoose connections. Each model imports its connection:
 ```js
 import { conn } from '../../../db.config.js'
 export default conn.snippetVaultConn.model('snippets', schema)
@@ -121,6 +122,7 @@ export default conn.snippetVaultConn.model('snippets', schema)
 2. **Hardcoded `?id=12345`** in `geduma-auth.routes.js:12`.
 3. **Config Manager has `null` API key/secret** — `security.auth()` will always reject.
 4. **`tags` is stored as comma-separated String** in `snippets` model — not queryable by individual tag.
+5. **Gpass blind storage** — `password`, `encrypted`, `iv` are never inspected by the server; `strength` and `compromised` are inspected for the `security=true` filter.
 
 ---
 
@@ -133,4 +135,4 @@ When modifying code:
 4. If adding a new module, follow the `routes + service + model` structure and register it in `main.router.js`.
 5. Import paths are relative (no path aliases).
 6. Run `npm run lint` and `npm test` after changes to stay clean.
-7. When adding endpoints, document them in PRD.md and README.md.
+7. When adding endpoints, document them in PRD.md.
