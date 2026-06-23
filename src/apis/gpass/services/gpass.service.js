@@ -8,19 +8,12 @@ const requireOwner = (owner) => {
   }
 }
 
-const getAll = (owner, q, security) => {
+const getAll = (owner, q) => {
   requireOwner(owner)
   const filter = { owner }
 
   if (q) {
     filter.title = { $regex: q, $options: 'i' }
-  }
-
-  if (security === 'true') {
-    filter.$or = [
-      { strength: 'weak' },
-      { compromised: true }
-    ]
   }
 
   return gpassModel.find(filter).sort({ updatedAt: -1 })
@@ -58,7 +51,7 @@ const update = async (id, data, owner) => {
 
   verifyOwnership(doc, owner)
 
-  const allowed = ['title', 'username', 'password', 'strength', 'encrypted', 'iv', 'compromised']
+  const allowed = ['title', 'username', 'password', 'strength', 'encrypted', 'iv']
   const updates = {}
   for (const field of allowed) {
     if (data[field] !== undefined) {

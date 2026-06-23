@@ -19,7 +19,7 @@ const gpassSchema = mongoose.Schema({
   strength: {
     type: String,
     required: true,
-    enum: ['strong', 'weak', 'compromised']
+    enum: ['strong', 'medium', 'weak']
   },
   encrypted: {
     type: String,
@@ -33,10 +33,6 @@ const gpassSchema = mongoose.Schema({
     type: String,
     required: true,
     trim: true
-  },
-  compromised: {
-    type: Boolean,
-    default: false
   }
 }, { timestamps: true })
 
