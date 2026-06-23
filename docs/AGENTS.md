@@ -38,6 +38,10 @@ src/
 ├── constants/
 │   ├── constants.js           # HTML templates, AUTH_PROVIDERS list
 │   └── endpoints.js           # External URLs (GitHub OAuth, Telegram API, Geduma Auth)
+├── middleware/
+│   ├── errorHandler.js        # Express error handler (4-arg)
+│   ├── validate.js            # Joi-like schema validation factory
+│   └── rateLimiter.js         # Shared rate limiter factory (global/read/write)
 ├── interceptors/
 │   └── security.interceptor.js # auth() → JWT gen, verify() → JWT middleware, cleanOldTokens()
 ├── jobs/
@@ -82,6 +86,15 @@ generalResponse.error(msg)  // { ok: false, msg,           data: [] }
 ```
 
 Empty result sets return **204 No Content** via `res.status(204)` before `res.send(...)`.
+
+### Rate limiting layers
+All modules use 3-tier rate limiting from `src/middleware/rateLimiter.js`:
+
+1. **Global** (120 req/min per IP) — all endpoints
+2. **Read** (60 req/min per owner+IP) — GET endpoints
+3. **Write** (30 req/min per owner+IP) — POST/PUT/DELETE endpoints
+
+Exceptions: modules without owner fall back to IP-only keying; short-url GET has 120 req/min (public redirects); geduma-auth login/auth have 15 req/min.
 
 ### Authentication layers
 - **No auth:** config-manager (all endpoints), health checks, snippet-vault (all endpoints), short-url GET, auth endpoints.

@@ -1,14 +1,16 @@
 import { generalResponse } from '../../utils/generalResponse.js'
 import { service } from './services/configurations.service.js'
+import { globalLimiter, readLimiter, writeLimiter } from '../../middleware/rateLimiter.js'
 
 export function configManagerRouter (app) {
   const path = '/config-manager'
+  app.use(path, globalLimiter)
 
-  app.get(`${path}/`, (_, res) => {
+  app.get(`${path}/`, readLimiter(60), (_, res) => {
     res.send(generalResponse.ok({ message: 'config-manager-api' }))
   })
 
-  app.get(`${path}/all`, async (_, res) => {
+  app.get(`${path}/all`, readLimiter(60), async (_, res) => {
     try {
       const data = await service.getAll()
       if (data.length <= 0) return res.status(204).end()
@@ -18,7 +20,7 @@ export function configManagerRouter (app) {
     }
   })
 
-  app.get(`${path}/owner/:owner`, async (req, res) => {
+  app.get(`${path}/owner/:owner`, readLimiter(60), async (req, res) => {
     try {
       const data = await service.getByOwner({ ownerStr: req.params.owner })
       if (data.length <= 0) return res.status(204).end()
@@ -28,7 +30,7 @@ export function configManagerRouter (app) {
     }
   })
 
-  app.get(`${path}/schema/:owner/:schema`, async (req, res) => {
+  app.get(`${path}/schema/:owner/:schema`, readLimiter(60), async (req, res) => {
     try {
       const data = await service.getBySchema({
         ownerStr: req.params.owner,
@@ -41,7 +43,7 @@ export function configManagerRouter (app) {
     }
   })
 
-  app.get(`${path}/name/:owner/:schema/:name`, async (req, res) => {
+  app.get(`${path}/name/:owner/:schema/:name`, readLimiter(60), async (req, res) => {
     try {
       const data = await service.getByName({
         ownerStr: req.params.owner,
@@ -55,7 +57,7 @@ export function configManagerRouter (app) {
     }
   })
 
-  app.post(`${path}`, async (req, res) => {
+  app.post(`${path}`, writeLimiter(30), async (req, res) => {
     try {
       if (!req.body) throw new Error('Request body is required')
       const { owner, schema, name, value, expiration } = req.body
@@ -68,7 +70,7 @@ export function configManagerRouter (app) {
     }
   })
 
-  app.put(`${path}/name/:owner/:schema/:name`, async (req, res) => {
+  app.put(`${path}/name/:owner/:schema/:name`, writeLimiter(30), async (req, res) => {
     try {
       if (!req.body) throw new Error('Request body is required')
       const { value, expiration } = req.body
@@ -86,7 +88,7 @@ export function configManagerRouter (app) {
     }
   })
 
-  app.delete(`${path}/name/:owner/:schema/:name`, async (req, res) => {
+  app.delete(`${path}/name/:owner/:schema/:name`, writeLimiter(30), async (req, res) => {
     try {
       const data = await service.remove({
         ownerStr: req.params.owner,

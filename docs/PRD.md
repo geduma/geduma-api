@@ -210,7 +210,7 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 
 **CORS:** Restricted to `https://notes.geduma.com`.
 
-**Rate limiting:** 50 requests per 15-minute window on all `/gnotes` endpoints.
+**Rate limiting:** 3-tier from `src/middleware/rateLimiter.js`: global (120/min IP), read (60/min owner+IP), write (30/min owner+IP).
 
 **Validation:**
 - `slug`: required, unique, must not conflict with existing notes (409).
@@ -277,7 +277,7 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 
 **CORS:** Restricted to `https://pass.geduma.com`.
 
-**Rate limiting:** 50 requests per 15-minute window on all `/gpass` endpoints.
+**Rate limiting:** 3-tier from `src/middleware/rateLimiter.js`: global (120/min IP), read (60/min owner+IP), write (30/min owner+IP).
 
 **Blind storage:** `password`, `encrypted`, and `iv` are stored and returned as-is. The server never reads or validates their contents.
 
@@ -306,6 +306,7 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 | `encrypted` | String | Yes | — | Blind storage |
 | `iv` | String | Yes | — | Blind storage |
 | `owner` | String | Yes | — | Owner identifier |
+| `tags` | [String] | No | `[]` | Searchable by `?q` |
 | `createdAt` / `updatedAt` | Date | auto | auto | Mongoose timestamps |
 
 **Indexes:**
@@ -384,7 +385,7 @@ Token lifecycle:
 - `morgan('dev')` — request logging
 - `express.json()` — JSON body parsing
 - `cors()` — cross-origin support (configurable via `CORS_ORIGIN` env var)
-- `express-rate-limit` — 100 requests per 15 min window on all routes
+- `express-rate-limit` — 100 requests per 15 min window on all routes (index.js) + per-module 3-tier (rateLimiter.js)
 - `errorHandler` — centralized error handling middleware
 - `validateEnv()` — checks required env vars at startup (see `.env.example`)
 
@@ -441,7 +442,7 @@ See `.env.example` for full list. Required vars are validated by `src/env-check.
 - The `config-manager` module has `null` API key and secret — no auth protection for configurations.
 - JWT tokens are single-use (deleted from Redis on first `verify()` call).
 - Redis `flushdb` runs daily — all tokens are invalidated regardless of expiry.
-- Rate limiting is enabled globally (100 requests / 15 min via `express-rate-limit`).
+- Rate limiting is enabled in 2 layers: global (100 req/15min in `index.js`) and per-module 3-tier (120 req/min global + 60/30 req/min read/write per owner+IP via `src/middleware/rateLimiter.js`).
 - Request input validation applied on POST/PUT endpoints.
 - Centralized Express error handler catches unhandled errors.
 
