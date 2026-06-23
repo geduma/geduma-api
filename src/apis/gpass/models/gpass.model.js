@@ -33,7 +33,8 @@ const gpassSchema = mongoose.Schema({
     type: String,
     required: true,
     trim: true
-  }
+  },
+  tags: { type: [String], default: [] }
 }, { timestamps: true })
 
 export default conn.gpassConn.model('gpass', gpassSchema)
