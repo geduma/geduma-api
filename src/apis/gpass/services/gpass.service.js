@@ -1,4 +1,17 @@
+import mongoose from 'mongoose'
 import gpassModel from '../models/gpass.model.js'
+
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+const validateObjectId = (id) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    const err = new Error('Invalid entry ID')
+    err.statusCode = 400
+    throw err
+  }
+}
+
+const ALLOWED_FIELDS = ['title', 'username', 'password', 'strength', 'encrypted', 'iv', 'owner', 'tags']
 
 const requireOwner = (owner) => {
   if (!owner) {
@@ -13,10 +26,11 @@ const getAll = (owner, q) => {
   const filter = { owner }
 
   if (q) {
+    const sanitized = escapeRegex(q)
     filter.$or = [
-      { title: { $regex: q, $options: 'i' } },
-      { username: { $regex: q, $options: 'i' } },
-      { tags: { $regex: q, $options: 'i' } }
+      { title: { $regex: sanitized, $options: 'i' } },
+      { username: { $regex: sanitized, $options: 'i' } },
+      { tags: { $regex: sanitized, $options: 'i' } }
     ]
   }
 
@@ -25,11 +39,18 @@ const getAll = (owner, q) => {
 
 const getById = (id, owner) => {
   requireOwner(owner)
+  validateObjectId(id)
   return gpassModel.findOne({ _id: id, owner })
 }
 
 const create = (data) => {
-  return gpassModel.create(data)
+  const entry = {}
+  for (const field of ALLOWED_FIELDS) {
+    if (data[field] !== undefined) {
+      entry[field] = data[field]
+    }
+  }
+  return gpassModel.create(entry)
 }
 
 const verifyOwnership = (doc, owner) => {
@@ -46,6 +67,8 @@ const verifyOwnership = (doc, owner) => {
 }
 
 const update = async (id, data, owner) => {
+  validateObjectId(id)
+
   const doc = await gpassModel.findById(id)
   if (!doc) {
     const err = new Error('Entry not found')
@@ -55,9 +78,8 @@ const update = async (id, data, owner) => {
 
   verifyOwnership(doc, owner)
 
-  const allowed = ['title', 'username', 'password', 'strength', 'encrypted', 'iv', 'tags']
   const updates = {}
-  for (const field of allowed) {
+  for (const field of ALLOWED_FIELDS) {
     if (data[field] !== undefined) {
       updates[field] = data[field]
     }
@@ -68,6 +90,8 @@ const update = async (id, data, owner) => {
 }
 
 const remove = async (id, owner) => {
+  validateObjectId(id)
+
   const doc = await gpassModel.findById(id)
   if (!doc) return { success: true }
 

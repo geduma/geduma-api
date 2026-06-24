@@ -77,18 +77,18 @@ describe('gpass.service', () => {
     })
 
     it('should return entry by id and owner', async () => {
-      const expected = { _id: 'abc123', title: 'Test', owner: 'hash1' }
+      const expected = { _id: '507f191e810c19729de860ea', title: 'Test', owner: 'hash1' }
       mockFindOne.mockResolvedValue(expected)
 
-      const result = await service.getById('abc123', 'hash1')
+      const result = await service.getById('507f191e810c19729de860ea', 'hash1')
       expect(result).toEqual(expected)
-      expect(mockFindOne).toHaveBeenCalledWith({ _id: 'abc123', owner: 'hash1' })
+      expect(mockFindOne).toHaveBeenCalledWith({ _id: '507f191e810c19729de860ea', owner: 'hash1' })
     })
 
     it('should return null when not found', async () => {
       mockFindOne.mockResolvedValue(null)
 
-      const result = await service.getById('nonexistent', 'hash1')
+      const result = await service.getById('507f191e810c19729de860eb', 'hash1')
       expect(result).toBeNull()
     })
   })
@@ -100,7 +100,7 @@ describe('gpass.service', () => {
         username: 'user@example.com',
         password: 'encrypted-data',
         strength: 'strong',
-        encrypted: 'abc123',
+        encrypted: 'enc123',
         iv: 'def456',
         owner: 'hash1'
       }
@@ -108,14 +108,22 @@ describe('gpass.service', () => {
 
       const result = await service.create(input)
       expect(result).toEqual({ _id: 'new-id', ...input })
-      expect(mockCreate).toHaveBeenCalledWith(input)
+      expect(mockCreate).toHaveBeenCalledWith({
+        title: 'My Pass',
+        username: 'user@example.com',
+        password: 'encrypted-data',
+        strength: 'strong',
+        encrypted: 'enc123',
+        iv: 'def456',
+        owner: 'hash1'
+      })
     })
   })
 
   describe('update', () => {
     it('should update partial fields', async () => {
       const existing = {
-        _id: 'abc123',
+        _id: '507f191e810c19729de860ea',
         title: 'Old Title',
         username: 'old@example.com',
         password: 'old-enc',
@@ -131,11 +139,11 @@ describe('gpass.service', () => {
         strength: 'strong'
       })
 
-      const result = await service.update('abc123', { title: 'New Title', strength: 'strong' }, 'hash1')
+      const result = await service.update('507f191e810c19729de860ea', { title: 'New Title', strength: 'strong' }, 'hash1')
       expect(result.title).toBe('New Title')
       expect(result.strength).toBe('strong')
       expect(mockFindByIdAndUpdate).toHaveBeenCalledWith(
-        'abc123',
+        '507f191e810c19729de860ea',
         { $set: { title: 'New Title', strength: 'strong' } },
         { new: true, runValidators: true }
       )
@@ -144,56 +152,56 @@ describe('gpass.service', () => {
     it('should throw 404 if entry not found', async () => {
       mockFindById.mockResolvedValue(null)
 
-      await expect(service.update('nonexistent', { title: 'New' }, 'hash1'))
+      await expect(service.update('507f191e810c19729de860eb', { title: 'New' }, 'hash1'))
         .rejects.toThrow('Entry not found')
     })
 
     it('should throw 400 if owner is missing', async () => {
-      const existing = { _id: 'abc123', owner: 'hash1' }
+      const existing = { _id: '507f191e810c19729de860ea', owner: 'hash1' }
       mockFindById.mockResolvedValue(existing)
 
-      await expect(service.update('abc123', { title: 'New' }, undefined))
+      await expect(service.update('507f191e810c19729de860ea', { title: 'New' }, undefined))
         .rejects.toThrow('Owner is required')
     })
 
     it('should throw 403 if owner does not match', async () => {
-      const existing = { _id: 'abc123', owner: 'hash1' }
+      const existing = { _id: '507f191e810c19729de860ea', owner: 'hash1' }
       mockFindById.mockResolvedValue(existing)
 
-      await expect(service.update('abc123', { title: 'New' }, 'wrong-hash'))
+      await expect(service.update('507f191e810c19729de860ea', { title: 'New' }, 'wrong-hash'))
         .rejects.toThrow('Forbidden: owner mismatch')
     })
   })
 
   describe('remove', () => {
     it('should delete entry when owner matches', async () => {
-      mockFindById.mockResolvedValue({ _id: 'abc123', owner: 'hash1' })
+      mockFindById.mockResolvedValue({ _id: '507f191e810c19729de860ea', owner: 'hash1' })
       mockDeleteOne.mockResolvedValue({ deletedCount: 1 })
 
-      const result = await service.remove('abc123', 'hash1')
+      const result = await service.remove('507f191e810c19729de860ea', 'hash1')
       expect(result).toEqual({ success: true })
-      expect(mockDeleteOne).toHaveBeenCalledWith({ _id: 'abc123' })
+      expect(mockDeleteOne).toHaveBeenCalledWith({ _id: '507f191e810c19729de860ea' })
     })
 
     it('should return success when entry does not exist', async () => {
       mockFindById.mockResolvedValue(null)
 
-      const result = await service.remove('nonexistent', 'hash1')
+      const result = await service.remove('507f191e810c19729de860eb', 'hash1')
       expect(result).toEqual({ success: true })
       expect(mockDeleteOne).not.toHaveBeenCalled()
     })
 
     it('should throw 400 if owner is missing', async () => {
-      mockFindById.mockResolvedValue({ _id: 'abc123', owner: 'hash1' })
+      mockFindById.mockResolvedValue({ _id: '507f191e810c19729de860ea', owner: 'hash1' })
 
-      await expect(service.remove('abc123', undefined))
+      await expect(service.remove('507f191e810c19729de860ea', undefined))
         .rejects.toThrow('Owner is required')
     })
 
     it('should throw 403 if owner does not match', async () => {
-      mockFindById.mockResolvedValue({ _id: 'abc123', owner: 'hash1' })
+      mockFindById.mockResolvedValue({ _id: '507f191e810c19729de860ea', owner: 'hash1' })
 
-      await expect(service.remove('abc123', 'wrong-hash'))
+      await expect(service.remove('507f191e810c19729de860ea', 'wrong-hash'))
         .rejects.toThrow('Forbidden: owner mismatch')
 
       expect(mockDeleteOne).not.toHaveBeenCalled()

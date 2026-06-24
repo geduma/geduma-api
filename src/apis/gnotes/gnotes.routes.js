@@ -1,24 +1,16 @@
 import cors from 'cors'
-import rateLimit from 'express-rate-limit'
 import { generalResponse } from '../../utils/generalResponse.js'
 import { service } from './services/gnotes.service.js'
 import { security } from '../../interceptors/security.interceptor.js'
+import { globalLimiter, readLimiter, writeLimiter } from '../../middleware/rateLimiter.js'
 
 export function gnotesRouter (app) {
   const path = '/gnotes'
 
   app.use(path, cors({ origin: 'https://notes.geduma.com' }))
+  app.use(path, globalLimiter)
 
-  const gnotesLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 50,
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: { ok: false, msg: 'Too many requests, please try again later', data: [] }
-  })
-  app.use(path, gnotesLimiter)
-
-  app.get(path, security.verify, async (req, res) => {
+  app.get(path, readLimiter(60), security.verify, async (req, res) => {
     try {
       const q = req.query.q
       const owner = req.query.owner
@@ -30,7 +22,7 @@ export function gnotesRouter (app) {
     }
   })
 
-  app.post(path, security.verify, async (req, res) => {
+  app.post(path, writeLimiter(30), security.verify, async (req, res) => {
     try {
       const note = await service.create(req.body)
       res.status(201).send(generalResponse.ok({ success: true, slug: note.slug }))
@@ -39,7 +31,7 @@ export function gnotesRouter (app) {
     }
   })
 
-  app.put(`${path}/:slug`, security.verify, async (req, res) => {
+  app.put(`${path}/:slug`, writeLimiter(30), security.verify, async (req, res) => {
     try {
       const note = await service.update(req.params.slug, req.body, req.body.owner)
       res.send(generalResponse.ok({ success: true, slug: note.slug }))
@@ -48,7 +40,7 @@ export function gnotesRouter (app) {
     }
   })
 
-  app.delete(`${path}/:slug`, security.verify, async (req, res) => {
+  app.delete(`${path}/:slug`, writeLimiter(30), security.verify, async (req, res) => {
     try {
       const owner = req.body.owner || req.query.owner
       await service.remove(req.params.slug, owner)

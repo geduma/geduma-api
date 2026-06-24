@@ -3,9 +3,11 @@ import path from 'path'
 import { generalResponse } from '../../utils/generalResponse.js'
 import { security } from '../../interceptors/security.interceptor.js'
 import { service } from './services/auth.service.js'
+import { globalLimiter, readLimiter, writeLimiter } from '../../middleware/rateLimiter.js'
 
 export function authRouter (app) {
   const p = '/auth'
+  app.use(p, globalLimiter)
 
   const getHtml = () => {
     const htmlPath = path.resolve('static/index.html')
@@ -39,7 +41,7 @@ export function authRouter (app) {
     }
   })
 
-  app.get(`${p}/providers/:appId`, async (req, res) => {
+  app.get(`${p}/providers/:appId`, readLimiter(40), async (req, res) => {
     try {
       const { appId } = req.params
       const providers = await service.getProvidersForApp(appId)
@@ -52,7 +54,7 @@ export function authRouter (app) {
     }
   })
 
-  app.post(`${p}/login/:appId/:provider`, async (req, res) => {
+  app.post(`${p}/login/:appId/:provider`, writeLimiter(15), async (req, res) => {
     try {
       const { appId, provider } = req.params
       const result = await service.initiateLogin({ appId, provider })
@@ -62,7 +64,7 @@ export function authRouter (app) {
     }
   })
 
-  app.get(`${p}/session/:sessionToken`, async (req, res) => {
+  app.get(`${p}/session/:sessionToken`, readLimiter(40), async (req, res) => {
     try {
       const { sessionToken } = req.params
       const data = await service.getSession(sessionToken)
@@ -72,7 +74,7 @@ export function authRouter (app) {
     }
   })
 
-  app.post(`${p}`, async (req, res) => {
+  app.post(`${p}`, writeLimiter(15), async (req, res) => {
     try {
       if (!req.body) throw new Error('Request body is required')
       const { name, user, key, data } = req.body

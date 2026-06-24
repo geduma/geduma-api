@@ -1,14 +1,16 @@
 import { generalResponse } from '../../utils/generalResponse.js'
 import { service } from './services/snippet.service.js'
+import { globalLimiter, readLimiter, writeLimiter } from '../../middleware/rateLimiter.js'
 
 export function snippetVaultRouter (app) {
   const path = '/snippet-vault'
+  app.use(path, globalLimiter)
 
-  app.get(`${path}/`, (_, res) => {
+  app.get(`${path}/`, readLimiter(60), (_, res) => {
     res.send(generalResponse.ok({ message: 'snippet-vault-api' }))
   })
 
-  app.get(`${path}/all`, async (_, res) => {
+  app.get(`${path}/all`, readLimiter(60), async (_, res) => {
     try {
       const data = await service.getAll()
       if (data.length <= 0) return res.status(204).end()
@@ -18,7 +20,7 @@ export function snippetVaultRouter (app) {
     }
   })
 
-  app.get(`${path}/group/:group`, async (req, res) => {
+  app.get(`${path}/group/:group`, readLimiter(60), async (req, res) => {
     try {
       const data = await service.getByGroup({ group: Number(req.params.group) })
       if (data.length <= 0) return res.status(204).end()
@@ -28,7 +30,7 @@ export function snippetVaultRouter (app) {
     }
   })
 
-  app.get(`${path}/:id`, async (req, res) => {
+  app.get(`${path}/:id`, readLimiter(60), async (req, res) => {
     try {
       const data = await service.getById({ id: req.params.id })
       if (!data) return res.status(404).send(generalResponse.error('Snippet not found'))
@@ -38,7 +40,7 @@ export function snippetVaultRouter (app) {
     }
   })
 
-  app.post(`${path}`, async (req, res) => {
+  app.post(`${path}`, writeLimiter(30), async (req, res) => {
     try {
       if (!req.body) throw new Error('Request body is required')
       const { group, title, description, tags, snippetValue, owner } = req.body
@@ -50,7 +52,7 @@ export function snippetVaultRouter (app) {
     }
   })
 
-  app.put(`${path}/:id`, async (req, res) => {
+  app.put(`${path}/:id`, writeLimiter(30), async (req, res) => {
     try {
       if (!req.body) throw new Error('Request body is required')
       const { group, title, description, tags, snippetValue, owner } = req.body
@@ -62,7 +64,7 @@ export function snippetVaultRouter (app) {
     }
   })
 
-  app.delete(`${path}/:id`, async (req, res) => {
+  app.delete(`${path}/:id`, writeLimiter(30), async (req, res) => {
     try {
       const data = await service.remove({ id: req.params.id })
       if (!data) return res.status(404).send(generalResponse.error('Snippet not found'))
