@@ -1,6 +1,8 @@
 import cors from 'cors'
+import jwt from 'jsonwebtoken'
 import { generalResponse } from '../../utils/generalResponse.js'
 import { service } from './services/gpass.service.js'
+import { allowedService } from './services/allowed-users.service.js'
 import { security } from '../../interceptors/security.interceptor.js'
 import { globalLimiter, readLimiter, writeLimiter } from '../../middleware/rateLimiter.js'
 import { validate } from '../../middleware/validate.js'
@@ -19,6 +21,25 @@ export function gpassRouter (app) {
       const data = await service.getAll(owner, q)
       if (data.length <= 0) return res.status(204).end()
       res.send(generalResponse.ok(data))
+    } catch (err) {
+      const status = err.statusCode || 500
+      const message = status === 500 ? 'Internal server error' : err.message
+      res.status(status).send(generalResponse.error(message))
+    }
+  })
+
+  app.get(`${path}/allowed`, readLimiter(60), security.verify, async (req, res) => {
+    try {
+      const token = req.headers.authorization
+      const decoded = jwt.decode(token.split(' ')[1])
+      const email = decoded?.data?.user
+
+      if (!email) {
+        return res.status(400).send(generalResponse.error('Invalid token payload'))
+      }
+
+      const allowed = await allowedService.isAllowed(email)
+      res.send(generalResponse.ok({ allowed }))
     } catch (err) {
       const status = err.statusCode || 500
       const message = status === 500 ? 'Internal server error' : err.message
