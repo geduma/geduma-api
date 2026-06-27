@@ -36,6 +36,9 @@ app.use(generalLimiter)
 
 app.use(monitor)
 
+// silence Chrome DevTools probing
+app.get('/.well-known/appspecific/com.chrome.devtools.json', (req, res) => res.status(204).end())
+
 // routes
 router(app)
 
