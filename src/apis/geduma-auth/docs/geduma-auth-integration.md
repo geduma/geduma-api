@@ -31,10 +31,11 @@ necesita hacer 3 llamadas HTTP.
        │                      │                     │
        │ <── redirect to ──── │                     │
        │  redirect_url?       │                     │
-       │  session_token=xxx   │                     │
-       │                      │                     │
-       │ ③ GET /auth/session/{sessionToken}         │
-       │ ← { email, displayName, picture, rawData } │
+        │  #session_token=xxx  │                     │
+        │                      │                     │
+        │ ③ GET /auth/session/{sessionToken}         │
+        │ ← { email, displayName, picture, rawData,  │
+        │     allowed, salt }   │                     │
        │    (session deleted) │                     │
 ```
 
@@ -149,8 +150,8 @@ El frontend debe redirigir al usuario a la URL en `data.redirect`.
 ### 3. Obtener sesión (después del callback)
 
 Una vez que el usuario completa el login en el proveedor, Geduma API redirige
-al navegador a `{redirectUrl}?session_token={uuid}` (obtenido de `apps.redirectUrl`). La app debe leer ese
-`session_token` de la URL y consultar los datos del usuario.
+al navegador a `{redirectUrl}#session_token={uuid}` (obtenido de `apps.redirectUrl`). La app debe leer ese
+`session_token` del hash de la URL y consultar los datos del usuario.
 
 ```
 GET {API_BASE_URL}/auth/session/{sessionToken}
@@ -173,7 +174,9 @@ GET {API_BASE_URL}/auth/session/{sessionToken}
       "name": "Usuario Ejemplo",
       "picture": "https://lh3.googleusercontent.com/a/...",
       "locale": "es"
-    }
+    },
+    "allowed": true,
+    "salt": "aGVsbG8gd29ybGQ="
   }
 }
 ```
@@ -251,7 +254,8 @@ function AuthCallback () {
   const [params] = useSearchParams()
 
   useEffect(() => {
-    const sessionToken = params.get('session_token')
+    const hash = window.location.hash.substring(1)
+    const sessionToken = new URLSearchParams(hash).get('session_token')
 
     if (!sessionToken) {
       console.error('No session_token received')
@@ -262,8 +266,8 @@ function AuthCallback () {
       .then(res => res.json())
       .then(json => {
         if (json.ok) {
-          const { email, displayName, picture, provider, rawData } = json.data
-          console.log('User logged in:', { email, displayName, provider })
+          const { email, displayName, picture, provider, rawData, allowed, salt } = json.data
+          console.log('User logged in:', { email, displayName, provider, allowed })
           // Aquí: guardar en estado global, redirigir al dashboard, etc.
         } else {
           console.error('Session error:', json.msg)
@@ -308,7 +312,7 @@ async function processCallback (sessionToken) {
   const res = await fetch(`${API}/auth/session/${sessionToken}`)
   const json = await res.json()
   if (json.ok) {
-    return json.data // { email, displayName, picture, provider, rawData }
+    return json.data // { email, displayName, picture, provider, rawData, allowed, salt }
   }
   throw new Error(json.msg)
 }
