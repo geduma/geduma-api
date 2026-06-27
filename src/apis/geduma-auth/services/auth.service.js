@@ -124,7 +124,7 @@ const getSession = async (sessionToken) => {
   const session = await AuthSessionsModel.findOne({ sessionToken })
   if (!session) throw new Error('Session not found or expired')
 
-  const allowed = await allowedService.isAllowed(session.email, session.appId)
+  const user = await allowedService.find(session.email, session.appId)
 
   const data = {
     email: session.email,
@@ -132,7 +132,8 @@ const getSession = async (sessionToken) => {
     picture: session.picture,
     provider: session.provider,
     rawData: session.rawData,
-    allowed
+    allowed: !!user,
+    salt: user?.salt || null
   }
 
   await AuthSessionsModel.deleteOne({ sessionToken })

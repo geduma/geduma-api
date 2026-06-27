@@ -3,6 +3,7 @@ import path from 'path'
 import { generalResponse } from '../../utils/generalResponse.js'
 import { security } from '../../interceptors/security.interceptor.js'
 import { service } from './services/auth.service.js'
+import { allowedService } from './services/allowed-users.service.js'
 import { globalLimiter, readLimiter, writeLimiter } from '../../middleware/rateLimiter.js'
 
 export function authRouter (app) {
@@ -86,5 +87,19 @@ export function authRouter (app) {
     }
   })
 
-  // POST /auth/set-provider removed — providers are configured in DB
+  app.post(`${p}/allowed-users`, writeLimiter(15), security.verify, async (req, res) => {
+    try {
+      const { email, appId } = req.body
+      if (!email || !appId) {
+        return res.status(400).send(generalResponse.error('email and appId are required'))
+      }
+      const doc = await allowedService.create({ email, appId })
+      res.status(201).send(generalResponse.ok(doc))
+    } catch (error) {
+      if (error.code === 11000) {
+        return res.status(409).send(generalResponse.error('User already allowed for this app'))
+      }
+      res.status(400).send(generalResponse.error(error.message))
+    }
+  })
 }
