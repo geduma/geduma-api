@@ -6,6 +6,7 @@ import { snippetVaultRouter } from './apis/snippet-vault/snippet-vault-routes.js
 import { screenshotBackupRouter } from './apis/screenshot-backup/screenshot-backup.routes.js'
 import { gnotesRouter } from './apis/gnotes/gnotes.routes.js'
 import { gpassRouter } from './apis/gpass/gpass.routes.js'
+import { adminRouter } from './apis/admin-dashboard/admin-dashboard.routes.js'
 
 export function router (app) {
   authRouter(app)
@@ -15,6 +16,7 @@ export function router (app) {
   screenshotBackupRouter(app)
   gnotesRouter(app)
   gpassRouter(app)
+  adminRouter(app)
 
   app.get('/', (_, res) => {
     res.send(generalResponse.ok({ message: 'geduma-api' }))

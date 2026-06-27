@@ -85,5 +85,4 @@ export function authRouter (app) {
       res.status(400).send(generalResponse.error(error.message))
     }
   })
-
 }

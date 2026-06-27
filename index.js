@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit'
 import { router } from './src/main.router.js'
 import { validateEnv } from './src/env-check.js'
 import { errorHandler } from './src/middleware/errorHandler.js'
+import { monitor } from './src/middleware/monitor.js'
 import { jobs } from './src/jobs/index.js'
 
 dotenv.config()
@@ -31,6 +32,8 @@ const generalLimiter = rateLimit({
   message: { ok: false, msg: 'Too many requests, please try again later', data: [] }
 })
 app.use(generalLimiter)
+
+app.use(monitor)
 
 // routes
 router(app)

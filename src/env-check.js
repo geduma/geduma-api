@@ -18,7 +18,8 @@ const envVars = [
   'GPASS_MONGODB_URI',
   'API_GPASS_KEY',
   'API_GPASS_TOKEN_SECRET',
-  'TELEGRAM_SCREENSHOT_BACKUP_BOT_TOKEN'
+  'TELEGRAM_SCREENSHOT_BACKUP_BOT_TOKEN',
+  'GEDUMA_API_MONGODB_URI'
 ]
 
 export function validateEnv (requiredKeys = envVars) {

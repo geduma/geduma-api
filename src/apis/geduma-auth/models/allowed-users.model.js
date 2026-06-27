@@ -17,6 +17,10 @@ const allowedUserSchema = mongoose.Schema({
     type: Boolean,
     default: true
   },
+  superuser: {
+    type: Boolean,
+    default: false
+  },
   salt: {
     type: String,
     required: true

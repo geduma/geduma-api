@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Geduma Admin</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0d1117; color: #c9d1d9; padding: 20px; }
+  h1 { font-size: 24px; margin-bottom: 4px; color: #58a6ff; }
+  .subtitle { color: #8b949e; font-size: 13px; margin-bottom: 20px; }
+  .last-update { color: #8b949e; font-size: 12px; margin-bottom: 16px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .stat-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px; }
+  .stat-card .label { font-size: 12px; color: #8b949e; text-transform: uppercase; letter-spacing: .5px; }
+  .stat-card .value { font-size: 28px; font-weight: 600; margin-top: 4px; }
+  .stat-card .value.green { color: #3fb950; }
+  .stat-card .value.yellow { color: #d29922; }
+  .stat-card .value.red { color: #f85149; }
+  table { width: 100%; border-collapse: collapse; background: #161b22; border: 1px solid #30363d; border-radius: 8px; overflow: hidden; }
+  th { text-align: left; padding: 12px 16px; font-size: 12px; color: #8b949e; text-transform: uppercase; letter-spacing: .5px; background: #0d1117; border-bottom: 1px solid #30363d; }
+  td { padding: 12px 16px; border-bottom: 1px solid #21262d; font-size: 14px; }
+  tr:last-child td { border-bottom: none; }
+  .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+  .status-dot.green { background: #3fb950; }
+  .status-dot.yellow { background: #d29922; }
+  .status-dot.red { background: #f85149; }
+  .alerts-section { margin-top: 24px; }
+  .alerts-section h2 { font-size: 16px; margin-bottom: 12px; color: #f85149; }
+  .alert-card { background: #161b22; border: 1px solid #f85149; border-left: 4px solid #f85149; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; }
+  .alert-card.warn { border-color: #d29922; border-left-color: #d29922; }
+  .alert-card .alert-title { font-weight: 600; font-size: 14px; }
+  .alert-card .alert-msg { color: #8b949e; font-size: 13px; margin-top: 2px; }
+  .alert-card .alert-severity { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; margin-top: 4px; }
+  .alert-card .alert-severity.ALERT { background: #f8514933; color: #f85149; }
+  .alert-card .alert-severity.WARN { background: #d2992233; color: #d29922; }
+  .errors-section { margin-top: 24px; }
+  .errors-section h2 { font-size: 16px; margin-bottom: 12px; color: #d29922; }
+  .error-row { background: #161b22; padding: 8px 12px; margin-bottom: 4px; border-radius: 4px; font-size: 13px; font-family: monospace; border-left: 3px solid #f85149; }
+  .error-row .meta { color: #8b949e; font-size: 11px; }
+  .error-row .path { color: #58a6ff; }
+  .error-row .code { font-weight: 600; padding: 1px 6px; border-radius: 3px; }
+  .error-row .code.four { color: #d29922; }
+  .error-row .code.five { color: #f85149; }
+  .loading { text-align: center; padding: 40px; color: #8b949e; }
+</style>
+</head>
+<body>
+  <h1>Geduma Admin</h1>
+  <div class="subtitle">Monitoring dashboard</div>
+  <div class="last-update" id="lastUpdate">Loading...</div>
+
+  <div class="grid" id="globalStats">
+    <div class="stat-card"><div class="label">Total Requests (5m)</div><div class="value" id="totalReqs">-</div></div>
+    <div class="stat-card"><div class="label">Errors (5m)</div><div class="value" id="totalErrors">-</div></div>
+    <div class="stat-card"><div class="label">Error Rate</div><div class="value" id="errorRate">-</div></div>
+    <div class="stat-card"><div class="label">Avg Response Time</div><div class="value" id="avgTime">-</div></div>
+  </div>
+
+  <div id="alertsContainer" class="alerts-section"></div>
+
+  <table id="modulesTable">
+    <thead><tr><th>Module</th><th>Status</th><th>Requests (5m)</th><th>Errors</th><th>4xx</th><th>Avg RT (ms)</th><th>Slow</th></tr></thead>
+    <tbody id="modulesBody"></tbody>
+  </table>
+
+  <div id="errorsContainer" class="errors-section">
+    <h2>Recent Errors</h2>
+    <div id="errorsList">No errors</div>
+  </div>
+
+<script>
+async function loadData () {
+  try {
+    const [summaryRes, alertsRes, errorsRes] = await Promise.all([
+      fetch('/admin/api/summary'),
+      fetch('/admin/api/alerts'),
+      fetch('/admin/api/errors')
+    ])
+    const summary = await summaryRes.json()
+    const alerts = summary.ok ? (await summaryRes.json()).data : []
+    const alertsData = alertsRes.ok ? (await alertsRes.json()).data : []
+    const errorsData = errorsRes.ok ? (await errorsRes.json()).data : []
+
+    document.getElementById('lastUpdate').textContent = 'Last update: ' + new Date().toLocaleTimeString()
+
+    const modules = Array.isArray(summary) ? summary : (summary.data || [])
+    const totalReqs = modules.reduce((a, m) => a + m.totalRequests, 0)
+    const totalErrors = modules.reduce((a, m) => a + m.errors, 0)
+
+    document.getElementById('totalReqs').textContent = totalReqs
+    document.getElementById('totalErrors').textContent = totalErrors
+
+    const errRate = totalReqs > 0 ? ((totalErrors / totalReqs) * 100).toFixed(1) + '%' : '0%'
+    document.getElementById('errorRate').textContent = errRate
+    document.getElementById('errorRate').className = 'value' + (totalErrors > 0 ? ' red' : '')
+
+    const allTimes = modules.filter(m => m.avgResponseTime > 0)
+    const avgTime = allTimes.length > 0 ? Math.round(allTimes.reduce((a, m) => a + m.avgResponseTime, 0) / allTimes.length) : 0
+    document.getElementById('avgTime').textContent = avgTime + 'ms'
+    document.getElementById('avgTime').className = 'value' + (avgTime > 1000 ? ' red' : avgTime > 500 ? ' yellow' : ' green')
+
+    const tbody = document.getElementById('modulesBody')
+    tbody.innerHTML = ''
+    if (modules.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#8b949e;">No data yet</td></tr>'
+    } else {
+      for (const mod of modules) {
+        const errPct = mod.totalRequests > 0 ? (mod.errors / mod.totalRequests) * 100 : 0
+        const status = errPct >= 10 || mod.avgResponseTime > 2000 ? 'red' : errPct >= 5 || mod.avgResponseTime > 1000 ? 'yellow' : 'green'
+        tbody.innerHTML += '<tr><td><strong>' + mod.module + '</strong></td><td><span class="status-dot ' + status + '"></span></td><td>' + mod.totalRequests + '</td><td>' + mod.errors + '</td><td>' + mod.clientErrors + '</td><td>' + mod.avgResponseTime + '</td><td>' + mod.slowCount + '</td></tr>'
+      }
+    }
+
+    const alertsEl = document.getElementById('alertsContainer')
+    if (alertsData.length > 0) {
+      let html = '<h2>Active Alerts</h2>'
+      for (const a of alertsData) {
+        html += '<div class="alert-card ' + (a.severity === 'WARN' ? 'warn' : '') + '">'
+        html += '<div class="alert-title">' + a.module + ' — ' + a.type + '</div>'
+        html += '<div class="alert-msg">' + a.message + '</div>'
+        html += '<span class="alert-severity ' + a.severity + '">' + a.severity + '</span>'
+        html += '</div>'
+      }
+      alertsEl.innerHTML = html
+    } else {
+      alertsEl.innerHTML = ''
+    }
+
+    const errorsEl = document.getElementById('errorsList')
+    if (errorsData.length > 0) {
+      let html = ''
+      for (const e of errorsData.slice(0, 20)) {
+        const codeClass = e.statusCode >= 500 ? 'five' : 'four'
+        const time = new Date(e.timestamp).toLocaleTimeString()
+        html += '<div class="error-row">'
+        html += '<span class="code ' + codeClass + '">' + e.statusCode + '</span> '
+        html += '<span class="path">' + e.method + ' ' + e.path + '</span>'
+        html += '<div class="meta">' + e.module + ' · ' + e.responseTime + 'ms · ' + e.ip + ' · ' + time + '</div>'
+        html += '</div>'
+      }
+      errorsEl.innerHTML = html
+    } else {
+      errorsEl.innerHTML = '<div class="error-row" style="border-left-color:#30363d;color:#8b949e;">No recent errors</div>'
+    }
+  } catch (e) {
+    console.error('Failed to load dashboard data:', e)
+  }
+}
+
+loadData()
+setInterval(loadData, 15000)
+</script>
+</body>
+</html>
