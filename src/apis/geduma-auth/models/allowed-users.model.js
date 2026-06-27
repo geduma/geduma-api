@@ -16,6 +16,10 @@ const allowedUserSchema = mongoose.Schema({
   enabled: {
     type: Boolean,
     default: true
+  },
+  salt: {
+    type: String,
+    required: true
   }
 }, { timestamps: true, collection: 'allowed_users' })
 

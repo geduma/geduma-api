@@ -1,9 +1,14 @@
+import crypto from 'crypto'
 import allowedUsersModel from '../models/allowed-users.model.js'
 
-const isAllowed = async (email, appId) => {
-  if (!email || !appId) return false
-  const user = await allowedUsersModel.findOne({ email, appId, enabled: true })
-  return !!user
+const find = async (email, appId) => {
+  if (!email || !appId) return null
+  return allowedUsersModel.findOne({ email, appId, enabled: true })
 }
 
-export const allowedService = { isAllowed }
+const create = async ({ email, appId }) => {
+  const salt = crypto.randomBytes(16).toString('base64')
+  return allowedUsersModel.create({ email, appId, enabled: true, salt })
+}
+
+export const allowedService = { find, create }
