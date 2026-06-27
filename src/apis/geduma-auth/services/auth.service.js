@@ -7,6 +7,7 @@ import ProvidersModel from '../models/providers.model.js'
 import AppsModel from '../models/apps.model.js'
 import AppProvidersModel from '../models/app-providers.model.js'
 import AuthSessionsModel from '../models/auth-sessions.model.js'
+import { allowedService } from './allowed-users.service.js'
 
 dotenv.config()
 
@@ -123,12 +124,15 @@ const getSession = async (sessionToken) => {
   const session = await AuthSessionsModel.findOne({ sessionToken })
   if (!session) throw new Error('Session not found or expired')
 
+  const allowed = await allowedService.isAllowed(session.email, session.appId)
+
   const data = {
     email: session.email,
     displayName: session.displayName,
     picture: session.picture,
     provider: session.provider,
-    rawData: session.rawData
+    rawData: session.rawData,
+    allowed
   }
 
   await AuthSessionsModel.deleteOne({ sessionToken })

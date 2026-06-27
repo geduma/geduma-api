@@ -70,7 +70,7 @@
         document.getElementById('error').textContent = errorMsg
       } else if (redirectUrl && redirectUrl.indexOf('{{') !== 0 && sessionToken && sessionToken.indexOf('{{') !== 0) {
         setTimeout(function () {
-          window.location.href = redirectUrl + '?session_token=' + sessionToken
+          window.location.href = redirectUrl + '#session_token=' + sessionToken
         }, 600)
       } else {
         document.getElementById('spinner').style.display = 'none'
