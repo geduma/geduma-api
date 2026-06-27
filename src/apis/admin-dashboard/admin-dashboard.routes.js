@@ -4,7 +4,7 @@ import { generalResponse } from '../../utils/generalResponse.js'
 import { metricsService } from './services/metrics.service.js'
 import { alertsService } from './services/alerts.service.js'
 import { allowedService } from '../geduma-auth/services/allowed-users.service.js'
-import { globalLimiter, readLimiter } from '../../middleware/rateLimiter.js'
+import { readLimiter } from '../../middleware/rateLimiter.js'
 
 const getHtml = () => {
   const htmlPath = path.resolve('src/apis/admin-dashboard/static/index.html')
@@ -30,8 +30,6 @@ const adminGuard = (req, res, next) => {
 export function adminRouter (app) {
   const p = '/admin'
 
-  app.use(p, globalLimiter)
-
   app.get(p, adminGuard, async (req, res) => {
     try {
       let html = getHtml()
@@ -44,7 +42,7 @@ export function adminRouter (app) {
 
   app.get(`${p}/api/summary`, readLimiter(30), adminGuard, async (req, res) => {
     try {
-      const summary = await metricsService.getSummary()
+      const summary = await metricsService.getSummary(req.query.window !== undefined ? Number(req.query.window) : 5)
       res.send(generalResponse.ok(summary))
     } catch (error) {
       res.status(500).send(generalResponse.error(error.message))

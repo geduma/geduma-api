@@ -29,6 +29,7 @@ const generalLimiter = rateLimit({
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => req.path.startsWith('/admin'),
   message: { ok: false, msg: 'Too many requests, please try again later', data: [] }
 })
 app.use(generalLimiter)

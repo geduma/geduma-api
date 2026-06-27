@@ -8,11 +8,11 @@ const log = async ({ module, method, path, statusCode, responseTime, ip }) => {
   }
 }
 
-const getSummary = async () => {
-  const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000)
+const getSummary = async (windowMinutes = 5) => {
+  const since = windowMinutes > 0 ? new Date(Date.now() - windowMinutes * 60 * 1000) : new Date(0)
 
   const stats = await RequestLog.aggregate([
-    { $match: { timestamp: { $gte: fiveMinAgo } } },
+    { $match: { timestamp: { $gte: since } } },
     {
       $group: {
         _id: '$module',
