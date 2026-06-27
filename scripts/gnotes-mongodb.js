@@ -4,9 +4,6 @@
 // Copiar y pegar en MongoDB Compass (MongoDB Shell)
 // ============================================================
 
-// 1. Seleccionar / crear la base de datos
-use geduma_gnotes
-
 // 2. Crear colección (si no existe)
 db.createCollection('gnotes')
 

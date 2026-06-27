@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Modular monolith backend API with 7 modules (Config Manager, Geduma Auth, Short URL, Snippet Vault, Screenshot Backup, Gnotes, Gpass). Built with Express + Mongoose + JWT + Upstash Redis.
+Modular monolith backend API with 8 modules (Config Manager, Geduma Auth, Short URL, Snippet Vault, Screenshot Backup, Gnotes, Gpass, Admin Dashboard). Built with Express + Mongoose + JWT + Upstash Redis.
 
 ---
 
@@ -30,10 +30,10 @@ npm test                  # vitest run
 ## Project Structure
 
 ```
-index.js                       # Entry: Express app, middleware, routes, cron
+index.js                       # Entry: Express app, middleware, routes, cron (also 204 for Chrome DevTools probe)
 src/
-├── main.router.js             # Aggregates all 7 module routers + health + 404
-├── db.config.js               # 7 Mongoose connections (conn.{authConn, configManagerConn, ...})
+├── main.router.js             # Aggregates all 8 module routers + health + 404
+├── db.config.js               # 8 Mongoose connections (conn.{authConn, configManagerConn, ...})
 ├── env-check.js               # Validates required env vars at startup
 ├── constants/
 │   ├── constants.js           # HTML templates, AUTH_PROVIDERS list
@@ -41,7 +41,8 @@ src/
 ├── middleware/
 │   ├── errorHandler.js        # Express error handler (4-arg)
 │   ├── validate.js            # Joi-like schema validation factory
-│   └── rateLimiter.js         # Shared rate limiter factory (global/read/write)
+│   ├── rateLimiter.js         # Shared rate limiter factory (global/read/write)
+│   └── monitor.js             # Logs every request to MongoDB for admin dashboard
 ├── interceptors/
 │   └── security.interceptor.js # auth() → JWT gen, verify() → JWT middleware, cleanOldTokens()
 ├── jobs/
@@ -57,7 +58,18 @@ src/
     ├── snippet-vault/         # routes + service + model (snippets)
     ├── screenshot-backup/     # routes + services/ + model (archives)
     ├── gnotes/                # routes + service + model (gnotes)
-    └── gpass/                 # routes + service + model (passwords, blind storage)
+    ├── gpass/                 # routes + service + model (passwords, blind storage)
+    └── admin-dashboard/       # routes + services/ + models + static/ (monitoring dashboard)
+        ├── config/
+        │   └── alerts.config.js
+        ├── services/
+        │   ├── metrics.service.js
+        │   ├── alerts.service.js
+        │   └── notifier.service.js
+        ├── models/
+        │   └── request-log.model.js
+        └── static/
+            └── index.html
 ```
 
 ## Architecture Rules
@@ -108,7 +120,7 @@ app.post(`${path}/something`, security.verify, handler)
 `security.verify` decodes JWT from `Authorization` header, checks Redis, deletes token (single-use), then calls `next()`.
 
 ### Database connections
-`db.config.js` creates 7 separate Mongoose connections. Each model imports its connection:
+`db.config.js` creates 8 separate Mongoose connections. Each model imports its connection:
 ```js
 import { conn } from '../../../db.config.js'
 export default conn.snippetVaultConn.model('snippets', schema)
@@ -131,7 +143,7 @@ export default conn.snippetVaultConn.model('snippets', schema)
 
 ## Known Issues to Be Aware Of
 
-1. **Commented-out auth** on `POST /auth/set-provider`: `security.verify` is commented.
+1. **Chrome DevTools probe** — `GET /.well-known/appspecific/com.chrome.devtools.json` returns `204` in `index.js` to avoid 404 noise in logs.
 2. **Hardcoded `?id=12345`** in `geduma-auth.routes.js:12`.
 3. **Config Manager has `null` API key/secret** — `security.auth()` will always reject.
 4. **`tags` is stored as comma-separated String** in `snippets` model — not queryable by individual tag.
