@@ -18,8 +18,6 @@ const redis = new Redis({
 
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000'
 
-const AUTH_FAILED = 'Authentication failed'
-
 const getProvidersForApp = async (appId) => {
   const app = await AppsModel.findOne({ appId, enabled: true })
   if (!app) return []
@@ -40,16 +38,16 @@ const getProvidersForApp = async (appId) => {
 
 const initiateLogin = async ({ appId, provider }) => {
   const app = await AppsModel.findOne({ appId, enabled: true })
-  if (!app) throw new Error(AUTH_FAILED)
+  if (!app) throw new Error('App not found or disabled')
 
   const appProvider = await AppProvidersModel.findOne({ appId, providerId: provider, enabled: true })
-  if (!appProvider) throw new Error(AUTH_FAILED)
+  if (!appProvider) throw new Error('Provider not enabled for this app')
 
   const providerDoc = await ProvidersModel.findOne({ providerId: provider, enabled: true })
-  if (!providerDoc) throw new Error(AUTH_FAILED)
+  if (!providerDoc) throw new Error('Provider not found or disabled')
 
   const oauthConfig = OAUTH_PROVIDERS[providerDoc.name]
-  if (!oauthConfig) throw new Error(AUTH_FAILED)
+  if (!oauthConfig) throw new Error('Provider not found or disabled')
 
   const state = uuidv4()
   const redirectUri = `${API_BASE_URL}/auth`
@@ -87,10 +85,10 @@ const handleCallback = async ({ code, state }) => {
   const { appId, redirectUrl, provider } = stateData
 
   const providerDoc = await ProvidersModel.findOne({ name: provider, enabled: true })
-  if (!providerDoc) throw new Error(AUTH_FAILED)
+  if (!providerDoc) throw new Error('Provider not found or disabled')
 
   const oauthConfig = OAUTH_PROVIDERS[provider]
-  if (!oauthConfig) throw new Error(AUTH_FAILED)
+  if (!oauthConfig) throw new Error('Provider not found or disabled')
 
   const redirectUri = `${API_BASE_URL}/auth`
 

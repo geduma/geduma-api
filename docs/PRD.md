@@ -2,13 +2,13 @@
 
 **Version:** 0.1.0  
 **Status:** Draft  
-**Last Updated:** 2026-06-22  
+**Last Updated:** 2026-06-27  
 
 ---
 
 ## 1. Product Overview
 
-Geduma API is a modular monolith backend that exposes five microservice-style API modules under a single Express.js application. It serves as the server-side infrastructure for the Geduma ecosystem of tools and services.
+Geduma API is a modular monolith backend that exposes eight microservice-style API modules under a single Express.js application. It serves as the server-side infrastructure for the Geduma ecosystem of tools and services.
 
 **Production URL:** `https://api.geduma.com`
 
@@ -22,7 +22,7 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 - Host a snippet vault for storing and retrieving reusable code blocks.
 - Provide a screenshot backup service via Telegram bot integration.
 - Offer a notes/markdown storage service with text search and tagging.
-- Maintain six isolated MongoDB databases (one per module) for data separation.
+- Maintain eight isolated MongoDB databases (one per module) for data separation.
 - Keep the system simple to deploy: single process, no container orchestration required.
 
 ---
@@ -317,6 +317,63 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 
 ---
 
+### 3.8 Admin Dashboard
+
+**Purpose:** Self-service administrative dashboard for real-time monitoring of all API modules. Detects anomalies, displays visual alerts, and sends push notifications via ntfy.sh.
+
+**Base path:** `/admin`
+
+**Endpoints:**
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/admin` | Superuser | Dashboard HTML |
+| GET | `/admin/api/summary?window=` | Superuser | Global summary + per-module metrics |
+| GET | `/admin/api/modules/:module?window=` | Superuser | Detail by module |
+| GET | `/admin/api/errors?limit=&page=&tab=&code=` | Superuser | Recent 4xx/5xx errors |
+| GET | `/admin/api/alerts` | Superuser | Active alerts |
+
+**Auth:** Dashboard endpoints require `x-admin-email` header validated against the `allowed_users` collection with `superuser: true` flag.
+
+**Monitoring flow:**
+1. Every request passes through `monitor.js` middleware (fire-and-forget log to MongoDB).
+2. Dashboard polls `GET /admin/api/summary` every 15 seconds.
+3. `alertsService.evaluate()` compares metrics against configurable thresholds.
+4. New alerts trigger `notifierService.notify()` → ntfy.sh → push notification to phone.
+
+**Alert thresholds** (configurable in `src/apis/admin-dashboard/config/alerts.config.js`):
+
+| Threshold | Default | Severity |
+|-----------|---------|----------|
+| errorRate > 10% in 5 min | 10% | ALERT |
+| requestSpike > 3× baseline in 1 min | 3× | WARN |
+| slowResponse > 2000ms in 5 min | 2000ms | ALERT |
+| authFailRate > 10 in 1 min | 10 | ALERT |
+| rateLimitHits > 50 in 1 min | 50 | WARN |
+| notFoundRate > 50% in 5 min | 50% | WARN |
+| singleIpFlood > 30 in 1 min | 30 | ALERT |
+
+**Superuser management:**
+- `allowed_users` collection in geduma-auth, field `superuser: Boolean (default: false)`.
+- Registration via script: `node scripts/create-superuser.js <email>`.
+- Login with `appId = '0'` for superuser registration.
+
+**Model:** `request_logs` (on `GEDUMA_API_MONGODB_URI`)
+
+| Field | Type | Notes |
+|-------|------|-------|
+| module | String | Module name or `root` |
+| method | String | HTTP method |
+| path | String | Request path |
+| statusCode | Number | HTTP status code |
+| responseTime | Number | Duration in ms |
+| ip | String | Client IP |
+| timestamp | Date | auto (TTL index: 7 days) |
+
+**Database:** `GEDUMA_API_MONGODB_URI` (shared with other modules, dedicated collection `request_logs`)
+
+---
+
 ## 4. Technical Architecture
 
 ### 4.1 Stack
@@ -325,7 +382,7 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 |-------|-----------|
 | Runtime | Node.js (ES Modules) |
 | Framework | Express 4.21 |
-| Databases | MongoDB Atlas (×7, via Mongoose 7) |
+| Databases | MongoDB Atlas (×8, via Mongoose 7) |
 | Cache / Token Store | Upstash Redis (Serverless) |
 | Auth | JWT (jsonwebtoken) |
 | Image Processing | Sharp (WebP compression) |
@@ -335,7 +392,7 @@ Geduma API is a modular monolith backend that exposes five microservice-style AP
 ### 4.2 Architecture Diagram
 
 ```
-Client / Telegram
+Client / Telegram / Dashboard
       │
       ▼
   Express (index.js)
@@ -343,6 +400,7 @@ Client / Telegram
       ├── morgan (logging)
       ├── cors
       ├── express.json
+      ├── monitor (logs every request to MongoDB)
       │
       ▼
   main.router.js
@@ -354,12 +412,13 @@ Client / Telegram
       ├── /screenshot-backup     → Screenshot Backup module
       ├── /gnotes                → Gnotes module
       ├── /gpass                 → Gpass module
+      ├── /admin                 → Admin Dashboard module
       │
       ▼
   Security Interceptor (JWT + Redis validation)
       │
       ▼
-  Mongoose ──→ 7 MongoDB Atlas databases
+  Mongoose ──→ 8 MongoDB Atlas databases
   Upstash ───→ Redis (token storage)
 ```
 
@@ -386,6 +445,7 @@ Token lifecycle:
 - `express.json()` — JSON body parsing
 - `cors()` — cross-origin support (configurable via `CORS_ORIGIN` env var)
 - `express-rate-limit` — 100 requests per 15 min window on all routes (index.js) + per-module 3-tier (rateLimiter.js)
+- `monitor` — logs every request (method, path, status, response time, IP) to `request_logs` collection for admin dashboard metrics. Skips `/admin` paths. Defined in `src/middleware/monitor.js`.
 - `errorHandler` — centralized error handling middleware
 - `validateEnv()` — checks required env vars at startup (see `.env.example`)
 
@@ -420,6 +480,8 @@ See `.env.example` for full list. Required vars are validated by `src/env-check.
 | `UPSTASH_REDIS_REST_URL` | Security | Yes |
 | `UPSTASH_REDIS_REST_TOKEN` | Security | Yes |
 | `TELEGRAM_SCREENSHOT_BACKUP_BOT_TOKEN` | Screenshot Backup | Yes |
+| `GEDUMA_API_MONGODB_URI` | Admin Dashboard | Yes |
+| `ADMIN_NTFY_TOPIC` | Admin Dashboard | No (alerts disabled if missing) |
 
 *\* `GEDUMA_AUTH_MONGODB_URI` is not in the current env-check list — potential gap.*
 
@@ -442,7 +504,9 @@ See `.env.example` for full list. Required vars are validated by `src/env-check.
 - The `config-manager` module has `null` API key and secret — no auth protection for configurations.
 - JWT tokens are single-use (deleted from Redis on first `verify()` call).
 - Redis `flushdb` runs daily — all tokens are invalidated regardless of expiry.
-- Rate limiting is enabled in 2 layers: global (100 req/15min in `index.js`) and per-module 3-tier (120 req/min global + 60/30 req/min read/write per owner+IP via `src/middleware/rateLimiter.js`).
+- Rate limiting is enabled in 2 layers: global (100 req/15min in `index.js`, skipped for `/admin` paths) and per-module 3-tier (120 req/min global + 60/30 req/min read/write per owner+IP via `src/middleware/rateLimiter.js`).
+- Admin dashboard auth relies on `x-admin-email` header validated against `allowed_users` with `superuser: true`.
+- Every request is logged by `monitor.js` middleware for observability (skips `/admin` to avoid recursion).
 - Request input validation applied on POST/PUT endpoints.
 - Centralized Express error handler catches unhandled errors.
 
@@ -452,7 +516,7 @@ See `.env.example` for full list. Required vars are validated by `src/env-check.
 
 1. ~~**sendMessage bug** (`telegram.service.js`): Fixed — `JSON.stringify()` added, migrated to async/await.~~ ✅
 2. ~~**Auth MongoDB URI not validated** (`env-check.js`): Fixed — `GEDUMA_AUTH_MONGODB_URI` added.~~ ✅
-3. **Missing module in README:** Short URL, Geduma Auth, and Screenshot Backup endpoints are undocumented.
+3. **Chrome DevTools probe** — `GET /.well-known/appspecific/com.chrome.devtools.json` returns `204` in `index.js` to avoid 404 noise in logs.
 4. **Hardcoded auth redirect** (`geduma-auth.routes.js:12`): `?id=12345` is a placeholder.
 5. **`security.verify` commented out** on `POST /auth/set-provider` — the route is unauthenticated despite the intent.
 6. **Config Manager has no auth** — `apiKeys['config-manager']` and `apiSecrets['config-manager']` are both `null`, meaning `security.auth()` will fail (key mismatch) for config-manager.
