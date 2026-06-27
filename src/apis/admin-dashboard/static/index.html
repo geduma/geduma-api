@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Geduma api-admin</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='3' fill='%230d1117'/><text x='8' y='12' text-anchor='middle' font-size='11' font-family='system-ui' font-weight='bold' fill='%2358a6ff'>G</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='3' fill='%230d1117'/><path d='M4 5l3 3-3 3' stroke='%2358a6ff' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/><path d='M9 11h3' stroke='%2358a6ff' stroke-width='1.5' fill='none' stroke-linecap='round'/></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><rect width='120' height='120' rx='20' fill='%230d1117'/><path d='M30 40l25 20-25 20' stroke='%2358a6ff' stroke-width='10' fill='none' stroke-linecap='round' stroke-linejoin='round'/><path d='M65 75h25' stroke='%2358a6ff' stroke-width='10' fill='none' stroke-linecap='round'/></svg>">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0d1117; color: #c9d1d9; padding: 20px; }
@@ -82,6 +83,31 @@
   .tab-btn:hover { border-color: #58a6ff; color: #c9d1d9; z-index: 2; }
   .tab-btn.active { background: #1f3a5f; border-color: #58a6ff; color: #58a6ff; z-index: 2; }
   .page-size-select { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; padding: 3px 8px; border-radius: 4px; font-size: 12px; cursor: pointer; }
+  .table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table-wrap table { min-width: 600px; }
+  @media (max-width: 640px) {
+    body { padding: 12px; }
+    h1 { font-size: 20px; }
+    .grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+    .stat-card { padding: 12px; }
+    .stat-card .value { font-size: 22px; }
+    th, td { padding: 8px 10px; font-size: 12px; }
+    .alert-card { padding: 10px 12px; }
+    .alert-card .alert-title { font-size: 13px; }
+    .alert-card .alert-msg { font-size: 12px; }
+    .header-row { flex-direction: column; align-items: flex-start; }
+    .header-controls { width: 100%; justify-content: space-between; }
+    .tabs { flex-wrap: wrap; }
+    .tab-btn { flex: 1; text-align: center; padding: 6px 8px; font-size: 12px; }
+    .filter-group { gap: 3px; }
+    .filter-btn { padding: 2px 7px; font-size: 11px; }
+    .pagination { flex-direction: row; justify-content: center; gap: 4px; }
+    .pagination .info { margin-right: 0; width: 100%; text-align: center; order: -1; margin-bottom: 2px; }
+    .pagination #pageNumbers { flex-wrap: wrap; justify-content: center; }
+    .pagination .page-btn { padding: 4px 7px; min-width: 28px; text-align: center; font-size: 12px; }
+    .error-row { font-size: 12px; padding: 6px 10px; word-break: break-all; }
+    .error-row .path { word-break: break-all; }
+  }
 </style>
 </head>
 <body>
@@ -119,10 +145,12 @@
 
   <div id="alertsContainer" class="alerts-section"></div>
 
+  <div class="table-wrap">
   <table id="modulesTable">
     <thead><tr><th>Module</th><th>Status</th><th id="thReqs">Requests</th><th>Errors</th><th>4xx</th><th>Avg RT (ms)</th><th>Slow</th></tr></thead>
     <tbody id="modulesBody"></tbody>
   </table>
+  </div>
 
   <div id="errorsContainer" class="errors-section">
     <div class="tabs">
