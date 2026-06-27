@@ -7,6 +7,7 @@ import { screenshotBackupRouter } from './apis/screenshot-backup/screenshot-back
 import { gnotesRouter } from './apis/gnotes/gnotes.routes.js'
 import { gpassRouter } from './apis/gpass/gpass.routes.js'
 import { adminRouter } from './apis/admin-dashboard/admin-dashboard.routes.js'
+import { iconService } from './apis/admin-dashboard/services/icon.service.js'
 
 export function router (app) {
   authRouter(app)
@@ -20,6 +21,24 @@ export function router (app) {
 
   app.get('/', (_, res) => {
     res.send(generalResponse.ok({ message: 'geduma-api' }))
+  })
+
+  app.get('/favicon.ico', async (_req, res, next) => {
+    try {
+      const { buf, contentType } = await iconService.favicon()
+      res.set('Content-Type', contentType)
+      res.set('Cache-Control', 'public, max-age=86400')
+      res.end(buf)
+    } catch (e) { next(e) }
+  })
+
+  app.get('/apple-touch-icon*.png', async (_req, res, next) => {
+    try {
+      const { buf, contentType } = await iconService.appleTouch(120)
+      res.set('Content-Type', contentType)
+      res.set('Cache-Control', 'public, max-age=86400')
+      res.end(buf)
+    } catch (e) { next(e) }
   })
 
   app.use((_req, res, _next) => {

@@ -8,6 +8,7 @@ import { validateEnv } from './src/env-check.js'
 import { errorHandler } from './src/middleware/errorHandler.js'
 import { monitor } from './src/middleware/monitor.js'
 import { jobs } from './src/jobs/index.js'
+import { iconService } from './src/apis/admin-dashboard/services/icon.service.js'
 
 dotenv.config()
 validateEnv()
@@ -47,6 +48,9 @@ app.use(errorHandler)
 
 // jobs
 jobs()
+
+// pre-generate icons so first request is instant
+iconService.warm()
 
 app.listen(app.get('port'), () => {
   console.log(`🚀 [port: ${app.get('port')}] server running...`)
