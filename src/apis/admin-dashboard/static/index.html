@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Geduma Admin</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='3' fill='%230d1117'/><text x='8' y='12' text-anchor='middle' font-size='11' font-family='system-ui' font-weight='bold' fill='%2358a6ff'>G</text></svg>">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0d1117; color: #c9d1d9; padding: 20px; }
@@ -36,18 +37,64 @@
   .alert-card .alert-severity.WARN { background: #d2992233; color: #d29922; }
   .errors-section { margin-top: 24px; }
   .errors-section h2 { font-size: 16px; margin-bottom: 12px; color: #d29922; }
-  .error-row { background: #161b22; padding: 8px 12px; margin-bottom: 4px; border-radius: 4px; font-size: 13px; font-family: monospace; border-left: 3px solid #f85149; }
+  .error-row { background: #161b22; padding: 8px 12px; margin-bottom: 4px; border-radius: 4px; font-size: 13px; font-family: monospace; border-left: 3px solid #30363d; }
+  .error-row.err { border-left-color: #f85149; }
+  .error-row.warn { border-left-color: #d29922; }
   .error-row .meta { color: #8b949e; font-size: 11px; }
   .error-row .path { color: #58a6ff; }
   .error-row .code { font-weight: 600; padding: 1px 6px; border-radius: 3px; }
   .error-row .code.four { color: #d29922; }
   .error-row .code.five { color: #f85149; }
+  .pagination { display: flex; align-items: center; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+  .pagination .info { color: #8b949e; font-size: 12px; margin-right: auto; }
+  .pagination button { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+  .pagination button:hover:not(:disabled) { border-color: #58a6ff; }
+  .pagination button:disabled { opacity: .4; cursor: default; }
+  .pagination button.active { background: #1f3a5f; border-color: #58a6ff; color: #58a6ff; }
   .loading { text-align: center; padding: 40px; color: #8b949e; }
+  .header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+  .header-row .last-update { margin-bottom: 0; font-size: 12px; color: #8b949e; }
+  .header-controls { display: flex; align-items: center; gap: 12px; }
+  .countdown { font-size: 13px; color: #8b949e; font-variant-numeric: tabular-nums; min-width: 24px; }
+  .btn-refresh { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; line-height: 1.4; transition: background .15s, border-color .15s; }
+  .btn-refresh:hover { background: #30363d; border-color: #58a6ff; }
+  .btn-refresh:disabled { opacity: .6; cursor: wait; }
+  .btn-spinner { display: none; width: 14px; height: 14px; border: 2px solid #30363d; border-top-color: #58a6ff; border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; }
+  .btn-spinner.visible { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .refresh-overlay { position: fixed; inset: 0; z-index: 999; background: rgba(13,17,23,.4); display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+  .refresh-overlay.visible { display: flex; }
+  .refresh-overlay .loading-spinner { width: 32px; height: 32px; border-width: 3px; }
+  .loading-overlay { text-align: center; padding: 60px 20px; color: #8b949e; }
+  .loading-spinner { width: 24px; height: 24px; border: 3px solid #30363d; border-top-color: #58a6ff; border-radius: 50%; animation: spin .6s linear infinite; margin: 0 auto 12px; }
+  .filter-group { display: flex; gap: 4px; flex-wrap: wrap; }
+  .filter-btn { background: #21262d; border: 1px solid #30363d; color: #8b949e; padding: 3px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; transition: background .15s, border-color .15s, color .15s; }
+  .filter-btn:hover { border-color: #58a6ff; color: #c9d1d9; }
+  .filter-btn.active { background: #1f3a5f; border-color: #58a6ff; color: #58a6ff; }
+  .tabs { display: flex; gap: 0; margin-bottom: 12px; }
+  .tab-btn { background: #161b22; border: 1px solid #30363d; color: #8b949e; padding: 6px 16px; cursor: pointer; font-size: 13px; transition: background .15s, border-color .15s, color .15s; }
+  .tab-btn:first-child { border-radius: 6px 0 0 6px; }
+  .tab-btn:last-child { border-radius: 0 6px 6px 0; }
+  .tab-btn:not(:last-child) { border-right: none; }
+  .tab-btn:hover { border-color: #58a6ff; color: #c9d1d9; z-index: 1; }
+  .tab-btn.active { background: #1f3a5f; border-color: #58a6ff; color: #58a6ff; z-index: 1; }
+  .page-size-select { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; padding: 3px 8px; border-radius: 4px; font-size: 12px; cursor: pointer; }
 </style>
 </head>
 <body>
-  <h1>Geduma Admin</h1>
-  <div class="subtitle">Monitoring dashboard</div>
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <div>Loading dashboard...</div>
+  </div>
+
+  <div id="dashboardContent" style="display:none">
+  <div class="header-row">
+    <div><h1>Geduma Admin</h1><div class="subtitle">Monitoring dashboard</div></div>
+    <div class="header-controls">
+      <span class="countdown" id="countdown">15s</span>
+      <button class="btn-refresh" id="btnRefresh" onclick="manualRefresh()"><span class="btn-spinner" id="refreshSpinner"></span>↻ Refresh</button>
+    </div>
+  </div>
   <div class="last-update" id="lastUpdate">Loading...</div>
 
   <div class="grid" id="globalStats">
@@ -65,22 +112,123 @@
   </table>
 
   <div id="errorsContainer" class="errors-section">
-    <h2>Recent Errors</h2>
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="errors">Errors</button>
+      <button class="tab-btn" data-tab="all">All Log</button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+      <div class="filter-group" id="errorFilters">
+        <button class="filter-btn active" data-code="">All</button>
+        <button class="filter-btn" data-code="4xx">4xx</button>
+        <button class="filter-btn" data-code="5xx">5xx</button>
+        <button class="filter-btn" data-code="401">401</button>
+        <button class="filter-btn" data-code="403">403</button>
+        <button class="filter-btn" data-code="404">404</button>
+        <button class="filter-btn" data-code="429">429</button>
+        <button class="filter-btn" data-code="500">500</button>
+      </div>
+      <div>
+        <label style="color:#8b949e;font-size:12px;margin-right:4px;">Per page:</label>
+        <select class="page-size-select" id="pageSizeSelect">
+          <option value="10" selected>10</option>
+          <option value="20">20</option>
+          <option value="30">30</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+      </div>
+    </div>
     <div id="errorsList">No errors</div>
+    <div class="pagination" id="errorsPagination" style="display:none">
+      <span class="info" id="paginationInfo"></span>
+      <button class="page-btn" data-page="prev" disabled>‹ Prev</button>
+      <span id="pageNumbers"></span>
+      <button class="page-btn" data-page="next" disabled>Next ›</button>
+    </div>
+  </div>
+  </div>
+
+  <div class="refresh-overlay" id="refreshOverlay">
+    <div class="loading-spinner"></div>
   </div>
 
 <script>
+const ADMIN_EMAIL = '{{ADMIN_EMAIL}}'
+const headers = { 'x-admin-email': ADMIN_EMAIL }
+
+let firstLoad = true
+let errorCodeFilter = ''
+let currentPage = 1
+let activeTab = 'errors'
+let pageSize = 10
+
+function renderPagination ({ page, totalPages, total }) {
+  const pag = document.getElementById('errorsPagination')
+  const info = document.getElementById('paginationInfo')
+  const nums = document.getElementById('pageNumbers')
+
+  if (total === 0) { pag.style.display = 'none'; return }
+
+  pag.style.display = 'flex'
+  info.textContent = totalPages > 1 ? page + ' of ' + totalPages + ' (' + total + ' total)' : total + ' results'
+
+  if (totalPages > 1) {
+    let html = ''
+    const start = Math.max(1, page - 2)
+    const end = Math.min(totalPages, page + 2)
+    if (start > 1) html += '<button class="page-btn" data-page="1">1</button>' + (start > 2 ? '<span style="color:#8b949e;padding:0 4px">…</span>' : '')
+    for (let i = start; i <= end; i++) {
+      html += '<button class="page-btn' + (i === page ? ' active' : '') + '" data-page="' + i + '">' + i + '</button>'
+    }
+    if (end < totalPages) html += (end < totalPages - 1 ? '<span style="color:#8b949e;padding:0 4px">…</span>' : '') + '<button class="page-btn" data-page="' + totalPages + '">' + totalPages + '</button>'
+    nums.innerHTML = html
+  } else {
+    nums.innerHTML = ''
+  }
+
+  pag.querySelector('[data-page="prev"]').disabled = page <= 1
+  pag.querySelector('[data-page="next"]').disabled = page >= totalPages
+}
+
+function renderErrors (errors) {
+  const el = document.getElementById('errorsList')
+  if (errors.length === 0) {
+    el.innerHTML = '<div class="error-row" style="color:#8b949e;">No entries</div>'
+    return
+  }
+  let html = ''
+  for (const e of errors) {
+    const codeClass = e.statusCode >= 500 ? 'five' : e.statusCode >= 400 ? 'four' : ''
+    const rowClass = e.statusCode >= 500 ? ' err' : e.statusCode >= 400 ? ' warn' : ''
+    const time = new Date(e.timestamp).toLocaleTimeString()
+    html += '<div class="error-row' + rowClass + '">'
+    html += '<span class="code ' + codeClass + '">' + e.statusCode + '</span> '
+    html += '<span class="path">' + e.method + ' ' + e.path + '</span>'
+    html += '<div class="meta">' + e.module + ' · ' + e.responseTime + 'ms · ' + e.ip + ' · ' + time + '</div>'
+    html += '</div>'
+  }
+  el.innerHTML = html
+}
+
 async function loadData () {
   try {
+    const errorsUrl = '/admin/api/errors?limit=' + pageSize + '&page=' + currentPage + '&tab=' + activeTab + (errorCodeFilter ? '&code=' + errorCodeFilter : '')
     const [summaryRes, alertsRes, errorsRes] = await Promise.all([
-      fetch('/admin/api/summary'),
-      fetch('/admin/api/alerts'),
-      fetch('/admin/api/errors')
+      fetch('/admin/api/summary', { headers }),
+      fetch('/admin/api/alerts', { headers }),
+      fetch(errorsUrl, { headers })
     ])
     const summary = await summaryRes.json()
-    const alerts = summary.ok ? (await summaryRes.json()).data : []
     const alertsData = alertsRes.ok ? (await alertsRes.json()).data : []
-    const errorsData = errorsRes.ok ? (await errorsRes.json()).data : []
+    const errorsResData = errorsRes.ok ? (await errorsRes.json()).data : {}
+    const errorsData = errorsResData.items || []
+    const errorsMeta = { page: errorsResData.page || currentPage, totalPages: errorsResData.totalPages || 0, total: errorsResData.total || 0 }
+
+    if (firstLoad) {
+      document.getElementById('loadingOverlay').style.display = 'none'
+      document.getElementById('dashboardContent').style.display = 'block'
+      firstLoad = false
+    }
 
     document.getElementById('lastUpdate').textContent = 'Last update: ' + new Date().toLocaleTimeString()
 
@@ -127,29 +275,87 @@ async function loadData () {
       alertsEl.innerHTML = ''
     }
 
-    const errorsEl = document.getElementById('errorsList')
-    if (errorsData.length > 0) {
-      let html = ''
-      for (const e of errorsData.slice(0, 20)) {
-        const codeClass = e.statusCode >= 500 ? 'five' : 'four'
-        const time = new Date(e.timestamp).toLocaleTimeString()
-        html += '<div class="error-row">'
-        html += '<span class="code ' + codeClass + '">' + e.statusCode + '</span> '
-        html += '<span class="path">' + e.method + ' ' + e.path + '</span>'
-        html += '<div class="meta">' + e.module + ' · ' + e.responseTime + 'ms · ' + e.ip + ' · ' + time + '</div>'
-        html += '</div>'
-      }
-      errorsEl.innerHTML = html
-    } else {
-      errorsEl.innerHTML = '<div class="error-row" style="border-left-color:#30363d;color:#8b949e;">No recent errors</div>'
-    }
+    renderErrors(errorsData)
+    renderPagination(errorsMeta)
   } catch (e) {
     console.error('Failed to load dashboard data:', e)
   }
 }
 
+const REFRESH_INTERVAL = 15
+let countdown = REFRESH_INTERVAL
+let countdownTimer = null
+
+function resetCountdown () {
+  countdown = REFRESH_INTERVAL
+  document.getElementById('countdown').textContent = countdown + 's'
+}
+
+function tick () {
+  countdown--
+  document.getElementById('countdown').textContent = countdown + 's'
+  if (countdown <= 0) {
+    resetCountdown()
+    document.getElementById('refreshOverlay').classList.add('visible')
+    loadData().then(() => {
+      document.getElementById('refreshOverlay').classList.remove('visible')
+    })
+  }
+}
+
+async function manualRefresh () {
+  const btn = document.getElementById('btnRefresh')
+  const spinner = document.getElementById('refreshSpinner')
+  const overlay = document.getElementById('refreshOverlay')
+  btn.disabled = true
+  spinner.classList.add('visible')
+  overlay.classList.add('visible')
+  resetCountdown()
+  await loadData()
+  overlay.classList.remove('visible')
+  spinner.classList.remove('visible')
+  btn.disabled = false
+}
+
+document.querySelector('.tabs').addEventListener('click', function (e) {
+  const btn = e.target.closest('.tab-btn')
+  if (!btn) return
+  this.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+  activeTab = btn.dataset.tab
+  currentPage = 1
+  loadData()
+})
+
+document.getElementById('pageSizeSelect').addEventListener('change', function () {
+  pageSize = Number(this.value)
+  currentPage = 1
+  loadData()
+})
+
+document.getElementById('errorFilters').addEventListener('click', function (e) {
+  const btn = e.target.closest('.filter-btn')
+  if (!btn) return
+  this.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+  errorCodeFilter = btn.dataset.code
+  currentPage = 1
+  loadData()
+})
+
+document.getElementById('errorsPagination').addEventListener('click', function (e) {
+  const btn = e.target.closest('.page-btn')
+  if (!btn || btn.disabled) return
+  const page = btn.dataset.page
+  if (page === 'prev') currentPage--
+  else if (page === 'next') currentPage++
+  else currentPage = Number(page)
+  loadData()
+})
+
+resetCountdown()
+countdownTimer = setInterval(tick, 1000)
 loadData()
-setInterval(loadData, 15000)
 </script>
 </body>
 </html>

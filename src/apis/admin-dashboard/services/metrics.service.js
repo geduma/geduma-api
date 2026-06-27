@@ -78,11 +78,24 @@ const getModuleDetail = async (module) => {
   }
 }
 
-const getRecentErrors = async (limit = 50) => {
-  return RequestLog.find(
-    { statusCode: { $gte: 400 } },
-    { method: 1, path: 1, statusCode: 1, responseTime: 1, ip: 1, module: 1, timestamp: 1, _id: 0 }
-  ).sort({ timestamp: -1 }).limit(limit)
+const getRecentErrors = async ({ limit = 10, page = 1, module, code, tab = 'errors' } = {}) => {
+  const filter = {}
+  if (tab === 'errors') filter.statusCode = { $gte: 400 }
+  if (module) filter.module = module
+  if (code) {
+    if (code === '4xx') filter.statusCode = { $gte: 400, $lt: 500 }
+    else if (code === '5xx') filter.statusCode = { $gte: 500, $lt: 600 }
+    else filter.statusCode = Number(code)
+  }
+  const skip = (page - 1) * limit
+  const [items, total] = await Promise.all([
+    RequestLog.find(
+      filter,
+      { method: 1, path: 1, statusCode: 1, responseTime: 1, ip: 1, module: 1, timestamp: 1, _id: 0 }
+    ).sort({ timestamp: -1 }).skip(skip).limit(limit),
+    RequestLog.countDocuments(filter)
+  ])
+  return { items, total, page, limit, totalPages: Math.ceil(total / limit) }
 }
 
 export const metricsService = { log, getSummary, getModuleDetail, getRecentErrors }

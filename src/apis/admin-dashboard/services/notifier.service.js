@@ -1,10 +1,13 @@
-const NTFY_TOPIC = process.env.ADMIN_NTFY_TOPIC
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 export async function notify ({ title, message, priority = 5 }) {
-  if (!NTFY_TOPIC) return
-  await fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
+  const topic = process.env.ADMIN_NTFY_TOPIC
+  if (!topic) return
+  await fetch(`https://ntfy.sh/${topic}`, {
     method: 'POST',
-    body: JSON.stringify({ topic: NTFY_TOPIC, title, message, priority, tags: ['warning'] }),
+    body: JSON.stringify({ topic, title, message, priority, tags: ['warning'] }),
     headers: { 'Content-Type': 'application/json' }
   }).catch(() => {})
 }

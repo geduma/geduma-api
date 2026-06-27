@@ -12,9 +12,9 @@ const getHtml = () => {
 }
 
 const adminGuard = (req, res, next) => {
-  const email = req.headers['x-admin-email']
+  const email = req.headers['x-admin-email'] || req.query.email
   if (!email) {
-    return res.status(401).send(generalResponse.error('x-admin-email header required'))
+    return res.status(401).send(generalResponse.error('x-admin-email header or ?email= required'))
   }
   allowedService.find(email, '0').then(user => {
     if (!user) {
@@ -32,9 +32,10 @@ export function adminRouter (app) {
 
   app.use(p, globalLimiter)
 
-  app.get(p, async (req, res) => {
+  app.get(p, adminGuard, async (req, res) => {
     try {
-      const html = getHtml()
+      let html = getHtml()
+      html = html.replace('{{ADMIN_EMAIL}}', req.adminUser.email)
       res.send(html)
     } catch (error) {
       res.status(500).send(generalResponse.error(error.message))
@@ -61,11 +62,23 @@ export function adminRouter (app) {
 
   app.get(`${p}/api/errors`, readLimiter(30), adminGuard, async (req, res) => {
     try {
-      const errors = await metricsService.getRecentErrors(50)
+      const errors = await metricsService.getRecentErrors({ limit: Number(req.query.limit) || 10, page: Number(req.query.page) || 1, code: req.query.code, tab: req.query.tab || 'errors' })
       res.send(generalResponse.ok(errors))
     } catch (error) {
       res.status(500).send(generalResponse.error(error.message))
     }
+  })
+
+  app.get(`${p}/api/doomy`, readLimiter(10), adminGuard, async (req, res) => {
+    metricsService.log({
+      module: 'admin',
+      method: 'GET',
+      path: '/admin/api/doomy',
+      statusCode: 500,
+      responseTime: 0,
+      ip: req.ip
+    })
+    res.status(500).send(generalResponse.error('🔥 Doomy forced 500 — test alert'))
   })
 
   app.get(`${p}/api/alerts`, readLimiter(30), adminGuard, async (req, res) => {
