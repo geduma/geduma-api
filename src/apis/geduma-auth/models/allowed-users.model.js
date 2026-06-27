@@ -5,8 +5,12 @@ const allowedUserSchema = mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true,
     lowercase: true,
+    trim: true
+  },
+  appId: {
+    type: String,
+    required: true,
     trim: true
   },
   enabled: {
@@ -15,4 +19,6 @@ const allowedUserSchema = mongoose.Schema({
   }
 }, { timestamps: true, collection: 'allowed_users' })
 
-export default conn.gpassConn.model('allowedUsers', allowedUserSchema)
+allowedUserSchema.index({ email: 1, appId: 1 }, { unique: true })
+
+export default conn.authConn.model('allowedUsers', allowedUserSchema)
